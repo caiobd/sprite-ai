@@ -7,7 +7,7 @@ from pet import sprite_sheet
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPixmap
 
-from .sprite_sheet import SpriteSheetInfo, SpriteSheetIterator
+from pet.sprite_sheet import SpriteSheetIterator, SpriteSheetMetadata
 import threading as th
 
 # from itertools import loop
@@ -68,22 +68,19 @@ class AnimationController:
     def __init__(
         self,
         sprite_sheet_image: QPixmap,
-        sprite_sheet_n_columns: int,
-        sprite_sheet_n_rows: int,
+        sprite_sheet_metadata: SpriteSheetMetadata,
         animations:dict[str,Animation]=None
     ):
         self.sprite_sheet_image = sprite_sheet_image
-        self.sprite_sheet_info = SpriteSheetInfo.from_qpixmap(
-            sprite_sheet_image, sprite_sheet_n_columns, sprite_sheet_n_rows
-        )
+        self.sprite_sheet_metadata = sprite_sheet_metadata
         self.canvas_image = QPixmap(
-            self.sprite_sheet_info.sprite_width, self.sprite_sheet_info.sprite_height
+            self.sprite_sheet_metadata.sprite_width, self.sprite_sheet_metadata.sprite_height
         )
         self._animations = animations
         self._animation = None
         self.current_animation = None
         self.sprite_sheet_iterator = SpriteSheetIterator(
-            self.sprite_sheet_info,
+            self.sprite_sheet_metadata,
             0,
             0,
         )

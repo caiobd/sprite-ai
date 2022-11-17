@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from pathlib import Path
-from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QPixmap
 from PyQt5 import QtWidgets, QtCore
 
 from pet.physics import RigidBody
 from pet.sprite_sheet.animation import Animation
+from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from .sprite_sheet import AnimationController
 
 # class SpriteWidget(QtWidgets.QWidget)
@@ -36,16 +35,13 @@ class AnimatedSpriteWidget(QtWidgets.QWidget):
 
     def set_sprite_sheet(
         self,
-        sprite_sheet: str|Path,
-        n_columns: int,
-        n_rows: int,
+        sprite_sheet_metadata: SpriteSheetMetadata,
         animations:dict[str,Animation]=None
     ):
-        sprite_sheet_image = QPixmap(sprite_sheet)
+        sprite_sheet_image = QPixmap(sprite_sheet_metadata.path)
         self.animation_controller = AnimationController(
             sprite_sheet_image,
-            n_columns,
-            n_rows,
+            sprite_sheet_metadata,
             animations
         )
         (
@@ -72,6 +68,9 @@ class AnimatedSpriteWidget(QtWidgets.QWidget):
     
     def stop_animation(self):
         self.animation_controller.play()
+    
+    def set_postion(self, x, y):
+        self.move(x, y)
     
 
         
