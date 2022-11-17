@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from pet import sprite_sheet
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPixmap
 
-from pet.sprite_sheet import SpriteSheetIterator, SpriteSheetMetadata
+from .sprite_sheet import SpriteSheetIterator, SpriteSheetMetadata
 import threading as th
 
 # from itertools import loop
