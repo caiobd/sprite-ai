@@ -55,6 +55,9 @@ class AnimatedSpriteWidget(QtWidgets.QWidget):
 
     # Overrides paintEvent from QWidget
     def paintEvent(self, evt):
+        self.update_frame()
+    
+    def update_frame(self):
         self.animation_controller.draw_frame()
         frame = self.animation_controller.frame
         self.canvas.setPixmap(frame)
@@ -67,7 +70,7 @@ class AnimatedSpriteWidget(QtWidgets.QWidget):
         self.animation_controller.play()
     
     def stop_animation(self):
-        self.animation_controller.play()
+        self.animation_controller.stop()
     
     def set_postion(self, x, y):
         self.move(x, y)

@@ -1,2 +1,2 @@
 from .animation import AnimationController
-from .sprite_sheet import SpriteSheetInfo, SpriteSheetIterator
+from .sprite_sheet import SpriteSheetMetadata, SpriteSheetIterator
