@@ -1,6 +1,7 @@
-from PyQt5.QtGui import QPixmap
-from typing import Tuple
 from dataclasses import dataclass, field
+from typing import Tuple
+
+from PyQt5.QtGui import QPixmap
 
 PositionTuple = Tuple[int, int, int, int]
 
@@ -83,7 +84,6 @@ class SpriteSheetIterator:
                 % self.sprite_sheet.width
             )
         except:
-            print('opis..')
             _offset_x = 0
         return _offset_x
 
@@ -96,7 +96,6 @@ class SpriteSheetIterator:
                 % self.sprite_sheet.sprite_width
             )
         except:
-            print('tsc tsc')
             _offset_y = 0
         
         return _offset_y

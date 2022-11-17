@@ -1,11 +1,14 @@
+from __future__ import annotations
+
+import logging
 from dataclasses import dataclass, field
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter
 
 from pet import sprite_sheet
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPainter, QPixmap
+
 from .sprite_sheet import SpriteSheetInfo, SpriteSheetIterator
-import logging
+import threading as th
 
 # from itertools import loop
 # class FrameSequence:
@@ -56,17 +59,9 @@ import logging
 class Animation:
     start_index: int
     end_index: int
-    speed: int
-    duration: int
-    sprite_sheet_info: SpriteSheetInfo
-    iterator: SpriteSheetIterator = field(init=False)
+    speed: int | float
+    duration: int | float = None
 
-    def __post_init__(self):
-        self.iterator = SpriteSheetIterator(
-            self.sprite_sheet_info, 
-            self.start_index,
-            self.end_index,
-        )
 
 # sprite renderer
 class AnimationController:
@@ -75,8 +70,7 @@ class AnimationController:
         sprite_sheet_image: QPixmap,
         sprite_sheet_n_columns: int,
         sprite_sheet_n_rows: int,
-        start_index: int = 0,
-        end_index: int = None,
+        animations:dict[str,Animation]=None
     ):
         self.sprite_sheet_image = sprite_sheet_image
         self.sprite_sheet_info = SpriteSheetInfo.from_qpixmap(
@@ -85,19 +79,38 @@ class AnimationController:
         self.canvas_image = QPixmap(
             self.sprite_sheet_info.sprite_width, self.sprite_sheet_info.sprite_height
         )
+        self._animations = animations
+        self._animation = None
+        self.current_animation = None
         self.sprite_sheet_iterator = SpriteSheetIterator(
             self.sprite_sheet_info,
-            start_index,
-            end_index,
+            0,
+            0,
         )
         self.sprite_sheet_position = next(self.sprite_sheet_iterator)
+        self._animation_loop_timer: th.Timer = None
+        self._stop_animation_timer: th.Timer = None
+        self.is_running = False
     
-    def set_animation(name: str):
+    def set_animation(self, name: str):
+        if not self._animations:
+            return
         try:
-            self._animation = self._animations[name]
+            animation = self._animations[name]
+            self.current_animation = name
+            self._animation = animation
+            self.sprite_sheet_iterator.start_index = animation.start_index
+            self.sprite_sheet_iterator.end_index = animation.end_index
+            self.sprite_sheet_iterator.reset()
         except KeyError as ke:
             logging.error(ke)
+    
+    def reset(self):
+        self.sprite_sheet_iterator.reset()
 
+    @property
+    def animation(self):
+        return self._animation
 
     def next_frame(self):
         self.sprite_sheet_position = next(self.sprite_sheet_iterator)
@@ -130,6 +143,25 @@ class AnimationController:
             frame_width,
             frame_height,
         )
+    
+    def _start_animation_loop(self):
+        self._animation_loop_timer = th.Timer(self.animation.speed, self._start_animation_loop)
+        self._animation_loop_timer.start()
+        self.next_frame()
+    
+    def _stop_animation_loop(self):
+        self._animation_loop_timer.cancel()
+    
+    def play(self):
+        self.is_animation_running = True
+        self._start_animation_loop()
+        self._stop_animation_timer = th.Timer(self.animation.duration, self._stop_animation_loop)
+        self._stop_animation_timer.start()
+    
+    def stop(self):
+        self._stop_animation_timer.cancel()
+        self._stop_animation_loop()
+        self.is_animation_running = False
 
 # class Renderer:
 #     def render(self, canvas_x, canvas_y, image: Image, frame_x: int, frame_y: int, frame_width: int, frame_height: int):
