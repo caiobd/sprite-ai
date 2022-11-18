@@ -1,79 +1,84 @@
 from __future__ import annotations
 
-from PyQt5.QtGui import QPixmap
-from PyQt5 import QtWidgets, QtCore
+from abc import ABC, abstractmethod
 
-from pet.physics import RigidBody
-from pet.sprite_sheet.animation import Animation
-from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
-from .sprite_sheet import AnimationController
+from PyQt5 import QtCore, QtWidgets
 
-# class SpriteWidget(QtWidgets.QWidget)
 
-class AnimatedSpriteWidget(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.canvas = None
-        self.animation_controller = None
+class SpriteWidget(ABC):
+    @property
+    @abstractmethod
+    def image(self):
+        ...
+
+    @image.setter
+    @abstractmethod
+    def image(self, value):
+        ...
+
+    @property
+    @abstractmethod
+    def position(self):
+        ...
+
+    @position.setter
+    @abstractmethod
+    def position(self, value):
+        ...
+
+    @abstractmethod
+    def show(self):
+        ...
+
+    @abstractmethod
+    def hide(self):
+        ...
+
+
+class SpriteWidgetQt(SpriteWidget):
+    def __init__(self):
+        self.qwidget = QtWidgets.QWidget()
+        self._canvas = None
+        self.image = None
         self._setup_gui()
-        self.rigid_body = RigidBody(
-            x=0,
-            y=0,
-            height=0,
-            width=0,
-        )
 
     def _setup_gui(self):
-        self.canvas = QtWidgets.QLabel()
+        self._canvas = QtWidgets.QLabel()
         layout = QtWidgets.QGridLayout()
-        layout.addWidget(self.canvas)
-        self.setLayout(layout)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setWindowFlags(
+        layout.addWidget(self._canvas)
+        self.qwidget.setLayout(layout)
+        self.qwidget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.qwidget.setWindowFlags(
             QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint
         )
+        # Overrides paintEvent from QWidget
+        self.qwidget.paintEvent = self._update_image
 
-    def set_sprite_sheet(
-        self,
-        sprite_sheet_metadata: SpriteSheetMetadata,
-        animations:dict[str,Animation]=None
-    ):
-        sprite_sheet_image = QPixmap(sprite_sheet_metadata.path)
-        self.animation_controller = AnimationController(
-            sprite_sheet_image,
-            sprite_sheet_metadata,
-            animations
-        )
-        (
-            _,
-            _,
-            frame_width,
-            frame_height,
-        ) = self.animation_controller.sprite_sheet_position
-        self.rigid_body.width=frame_width
-        self.rigid_body.height=frame_height
+    def _update_image(self, evt):
+        if self.image is not None:
+            self._canvas.setPixmap(self.image)
+            self.qwidget.update()
 
-    # Overrides paintEvent from QWidget
-    def paintEvent(self, evt):
-        self.update_frame()
-    
-    def update_frame(self):
-        self.animation_controller.draw_frame()
-        frame = self.animation_controller.frame
-        self.canvas.setPixmap(frame)
-        self.update()
-    
-    def set_animation(self, name:str):
-        self.animation_controller.set_animation(name)
-    
-    def play_animation(self):
-        self.animation_controller.play()
-    
-    def stop_animation(self):
-        self.animation_controller.stop()
-    
-    def set_postion(self, x, y):
-        self.move(x, y)
-    
+    @property
+    def image(self):
+        return self._image
 
-        
+    @image.setter
+    def image(self, value):
+        self._image = value
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, xy_coordinates: tuple[int, int]):
+        self._position = xy_coordinates
+        if xy_coordinates is not None:
+            self.qwidget.move(*xy_coordinates)
+
+    def show(self):
+        self.qwidget.show()
+
+    def hide(self):
+        self.qwidget.hide()
