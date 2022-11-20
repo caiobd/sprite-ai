@@ -55,7 +55,7 @@ class SpriteWidgetQt(SpriteWidget):
         self.qwidget.paintEvent = self._update_image
 
     def _update_image(self, evt):
-        if self.image is not None:
+        if self._canvas is not None and self.image is not None:
             self._canvas.setPixmap(self.image)
             self.qwidget.update()
 

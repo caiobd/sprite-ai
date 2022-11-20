@@ -7,7 +7,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
 
 from pet.sprite_sheet.animation import Animation, AnimationController
-from pet.sprite_sheet.movement import LinearMovement, Movement
+from pet.sprite_sheet.movement import Coordinate, LinearMovement, Movement
 from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from pet.sprite_widget import SpriteWidgetQt
 
@@ -46,13 +46,14 @@ class Pet:
         self._position_update_timer.start()
         if self._movement is not None:
             self._movement.step()
-            self.sprite_widget.position = self._movement.position
+            x, y = self._movement.position
+            position = Coordinate(int(x), int(y))
+            self.sprite_widget.position = position
 
     def event_loop(self):
         self.sprite_widget.show()
         self._update_image_loop()
         self._update_position_loop()
-        self.animation_controller.set_animation("walking_left")
         self.animation_controller.play()
         self.sprite_widget.position = (500, 500)
         self._app.exec()
@@ -70,8 +71,8 @@ class Pet:
 def main():
     animations = {
         "idle": Animation(0, 0, 0.2),
-        "walking_left": Animation(0, 3, 0.2, flip_x=True),
-        "walking_right": Animation(0, 3, 0.2),
+        "walking_left": Animation(0, 3, 0.2),
+        "walking_right": Animation(0, 3, 0.2, flip_x=True, flip_y=False),
         "jumping": Animation(2, 4, 0.2),
     }
     movements = {
@@ -86,9 +87,14 @@ def main():
         "resources/sprites/fred.png", 5888, 128, 46, 1
     )
     pet = Pet(sprite_sheet_metadata, animations, movements)
+
+    pet.set_animation("walking_right")
     pet.set_movement("walking")
-    # pet.set_animation("walking")
     pet.event_loop()
+    pet._image_update_timer.cancel()
+    pet._image_update_timer.join()
+    pet._position_update_timer.cancel()
+    pet._position_update_timer.join()
 
 
 if __name__ == "__main__":

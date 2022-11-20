@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import logging
+import threading as th
 from dataclasses import dataclass
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QPixmap
+from PyQt5.QtGui import QPainter, QPixmap, QTransform
 
 from .sprite_sheet import SpriteSheetIterator, SpriteSheetMetadata
-import threading as th
 
 # from itertools import loop
 # class FrameSequence:
@@ -20,7 +20,7 @@ import threading as th
 #         pass
 
 #     def next(self):
-#         for frame_sequence in 
+#         for frame_sequence in
 
 # class AbstractAnimation:
 #     sprite_sheet: AbstractSpriteSheet
@@ -54,12 +54,15 @@ import threading as th
 #     def render(self, canvas: object):
 #         pass
 
+
 @dataclass
 class Animation:
     start_index: int
     end_index: int
     speed: int | float
-    duration: int | float = None
+    duration: int | float | None = None
+    flip_x: bool = False
+    flip_y: bool = False
 
 
 # sprite renderer
@@ -68,15 +71,16 @@ class AnimationController:
         self,
         sprite_sheet_image: QPixmap,
         sprite_sheet_metadata: SpriteSheetMetadata,
-        animations:dict[str,Animation]=None
+        animations: dict[str, Animation] | None = None,
     ):
         self.sprite_sheet_image = sprite_sheet_image
         self.sprite_sheet_metadata = sprite_sheet_metadata
         self.canvas_image = QPixmap(
-            self.sprite_sheet_metadata.sprite_width, self.sprite_sheet_metadata.sprite_height
+            self.sprite_sheet_metadata.sprite_width,
+            self.sprite_sheet_metadata.sprite_height,
         )
         self._animations = animations
-        self._animation = None
+        self._animation: Animation | None = None
         self.current_animation = None
         self.sprite_sheet_iterator = SpriteSheetIterator(
             self.sprite_sheet_metadata,
@@ -84,28 +88,33 @@ class AnimationController:
             0,
         )
         self.sprite_sheet_position = next(self.sprite_sheet_iterator)
-        self._animation_loop_timer: th.Timer = None
-        self._stop_animation_timer: th.Timer = None
+        self._animation_loop_timer: th.Timer | None = None
+        self._stop_animation_timer: th.Timer | None = None
         self.is_running = False
-    
+
+        self._x_flipped = False
+        self._y_flipped = False
+
     def set_animation(self, name: str):
-        if not self._animations:
-            return
+        if self._animations == None:
+            raise TypeError("Animations must be set and not None")
         try:
-            animation = self._animations[name]
+            animation: Animation = self._animations[name]
             self.current_animation = name
             self._animation = animation
             self.sprite_sheet_iterator.start_index = animation.start_index
             self.sprite_sheet_iterator.end_index = animation.end_index
             self.sprite_sheet_iterator.reset()
         except KeyError as ke:
-            logging.error(ke)
-    
+            raise ValueError(
+                f'Invalid animations name: "{name}", please use one of {self._animations.keys()}'
+            )
+
     def reset(self):
         self.sprite_sheet_iterator.reset()
 
     @property
-    def animation(self):
+    def animation(self) -> Animation | None:
         return self._animation
 
     def next_frame(self):
@@ -120,14 +129,16 @@ class AnimationController:
             (self.canvas_image, self.sprite_sheet_image, self.sprite_sheet_position)
         ):
             return
-        self.canvas_image.fill(Qt.transparent)
+
         (
             spritesheet_x_offset,
             spritesheet_y_offset,
             frame_width,
             frame_height,
         ) = self.sprite_sheet_position
-        painter = QPainter(self.canvas_image)
+        self.canvas_image.fill(Qt.transparent)
+
+        painter: QPainter = QPainter(self.canvas_image)
         painter.drawPixmap(
             0,
             0,
@@ -139,25 +150,48 @@ class AnimationController:
             frame_width,
             frame_height,
         )
-    
+        self._update_flip_state(painter)
+
+    def _update_flip_state(self, painter):
+        x_transform = 1
+        y_transform = 1
+
+        if self._animation.flip_x:
+            x_transform = -1
+        if self._animation.flip_y:
+            y_transform = -1
+
+        image_transform = QTransform.fromScale(x_transform, y_transform)
+        transformed_canvas_image = self.canvas_image.transformed(image_transform)
+        self.canvas_image.fill(Qt.transparent)
+        painter.drawPixmap(0, 0, transformed_canvas_image)
+
     def _start_animation_loop(self):
-        self._animation_loop_timer = th.Timer(self.animation.speed, self._start_animation_loop)
+        self._animation_loop_timer = th.Timer(
+            self.animation.speed, self._start_animation_loop
+        )
         self._animation_loop_timer.start()
         self.next_frame()
-    
+        self.draw_frame()
+
     def _stop_animation_loop(self):
         self._animation_loop_timer.cancel()
-    
+
     def play(self):
+        if self._animation == None:
+            raise ValueError("animation must be set before play is called")
         self.is_animation_running = True
         self._start_animation_loop()
-        self._stop_animation_timer = th.Timer(self.animation.duration, self._stop_animation_loop)
+        self._stop_animation_timer = th.Timer(
+            self._animation.duration, self._stop_animation_loop
+        )
         self._stop_animation_timer.start()
-    
+
     def stop(self):
         self._stop_animation_timer.cancel()
         self._stop_animation_loop()
         self.is_animation_running = False
+
 
 # class Renderer:
 #     def render(self, canvas_x, canvas_y, image: Image, frame_x: int, frame_y: int, frame_width: int, frame_height: int):
@@ -174,12 +208,12 @@ class AnimationController:
 #     def __init__(self, canvas: QPixmap):
 #         self.qpainter = QPainter(canvas)
 #         self.canvas = canvas
-    
+
 #     def render(self, canvas_x, canvas_y, image: Image, image_x_offset: int, image_y_offset: int, image_width: int, image_height: int):
-        
+
 #         if not image.isinstance(QPixmap):
 #             raise TypeError("Unsuported image type, try using QPixmap")
-        
+
 #         self.qpainter.drawPixmap(
 #             canvas_x,
 #             canvas_y,

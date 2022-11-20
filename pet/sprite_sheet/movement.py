@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass, field
-from typing import NamedTuple, Union
+from typing import NamedTuple, Sequence, Union
 
 Numeric = Union[int, float]
 
@@ -22,6 +22,20 @@ class Movement(abc.ABC):
         ...
 
 
+# class MovementSequence(Movement):
+#     def __init__(self, movements: Sequence[Movement]) -> None:
+#         super().__init__()
+#         self._movements = movements
+#         self._movement_index = 0
+
+#     def step(self) -> Coordinate:
+#         current_movement = self._movements[self._movement_index]
+#         current_position = current_movement.step()
+
+#     def step_reverse(self) -> Coordinate:
+#         ...
+
+
 @dataclass
 class LinearMovement(Movement):
     start: Coordinate
@@ -29,16 +43,16 @@ class LinearMovement(Movement):
     n_steps: int
     loop: bool = False
     loop_reverse: bool = False
-    _position: Coordinate | None = field(default=None, init=False)
+    _position: Coordinate = field(default_factory=lambda: Coordinate(0, 0), init=False)
     _step_index: int = field(default=0, init=False)
     step_increment: int = field(default=1, init=False)
 
     @property
-    def position(self):
+    def position(self) -> Coordinate | None:
         return self._position
 
     @property
-    def step_index(self):
+    def step_index(self) -> int:
         return self._step_index
 
     @step_index.setter
@@ -130,9 +144,9 @@ class LinearMovement(Movement):
 
         return self._position
 
-    def step_reverse(self):
+    def step_reverse(self) -> Coordinate:
         if self._step_index > 0:
             self._step_index -= 1
-
         self._update_position()
+
         return self._position
