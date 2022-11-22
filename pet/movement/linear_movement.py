@@ -12,8 +12,6 @@ class LinearMovement(Movement):
     start: Coordinate
     end: Coordinate
     n_steps: int
-    loop: bool = False
-    loop_reverse: bool = False
     _position: Coordinate = field(default_factory=lambda: Coordinate(0, 0), init=False)
     _step_index: int = field(default=0, init=False)
     step_increment: int = field(default=1, init=False)
@@ -49,12 +47,10 @@ class LinearMovement(Movement):
         start: tuple[Numeric, Numeric],
         end: tuple[Numeric, Numeric],
         n_steps: int,
-        loop: bool = False,
-        loop_reverse: bool = False,
     ):
         start = Coordinate(*start)
         end = Coordinate(*end)
-        return cls(start, end, n_steps, loop, loop_reverse)
+        return cls(start, end, n_steps)
 
     @classmethod
     def from_numeric(
@@ -64,12 +60,10 @@ class LinearMovement(Movement):
         end_x: Numeric,
         end_y: Numeric,
         n_steps: int,
-        loop: bool = False,
-        loop_reverse: bool = False,
     ):
         start = Coordinate(start_x, start_y)
         end: Coordinate = Coordinate(end_x, end_y)
-        return cls(start, end, n_steps, loop, loop_reverse)
+        return cls(start, end, n_steps)
 
     def _update_position(self):
         if self._step_index == 0:
@@ -92,14 +86,6 @@ class LinearMovement(Movement):
     def step(self) -> Coordinate:
         max_index = self.n_steps - 1
         min_index = 0
-
-        is_edge_case = self._position == self.end or self._position == self.start
-        if self.loop and is_edge_case:
-            if self.loop_reverse:
-                self.step_increment = self.step_increment * -1
-                # self._step_index
-            else:
-                self._step_index = 0
 
         # Makes sure _step_index respects index upper bound
         if self._step_index + self.step_increment > max_index:

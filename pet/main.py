@@ -85,9 +85,7 @@ def main():
     }
     movements = {
         "idle": None,
-        "walking": LinearMovement.from_tuple(
-            (0, 0), (1000, 0), 100, loop=True, loop_reverse=True
-        ),
+        "walking": LinearMovement.from_tuple((0, 0), (100, 0), 10),
         "walking_loop": BoomerangLoopMovement(
             LinearMovement.from_tuple((0, 0), (100, 0), 10)
         ),
@@ -125,7 +123,7 @@ def main():
                 LinearMovement.from_tuple((0, 0), (1000, 0), 100),
             )
         ),
-        "jumping": LinearMovement.from_tuple((0, 0), (0, 0.2), 500, loop=True),
+        "jumping": LinearMovement.from_tuple((0, 0), (0, 0.2), 500),
     }
 
     sprite_sheet_metadata = SpriteSheetMetadata(
@@ -134,7 +132,7 @@ def main():
     pet = Pet(sprite_sheet_metadata, animations, movements)
 
     pet.set_animation("walking_right")
-    pet.set_movement("walking_squence_loop")
+    pet.set_movement("walking")
     pet.event_loop()
     pet._image_update_timer.cancel()
     pet._image_update_timer.join()
