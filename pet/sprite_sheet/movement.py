@@ -12,28 +12,131 @@ class Coordinate(NamedTuple):
     y: Numeric
 
 
+@dataclass
 class Movement(abc.ABC):
     @abc.abstractmethod
     def step(self) -> Coordinate:
         ...
 
     @abc.abstractmethod
-    def step_reverse(selt) -> Coordinate:
+    def step_reverse(self) -> Coordinate:
+        ...
+
+    @abc.abstractmethod
+    def is_at_beginning(self) -> bool:
+        ...
+
+    @abc.abstractmethod
+    def is_at_endding(self) -> bool:
         ...
 
 
-# class MovementSequence(Movement):
-#     def __init__(self, movements: Sequence[Movement]) -> None:
-#         super().__init__()
-#         self._movements = movements
-#         self._movement_index = 0
+class SequenceMovement(Movement):
+    def __init__(self, movements: Sequence[Movement]) -> None:
+        super().__init__()
+        self._movements = movements
+        self._movement_index = 0
 
-#     def step(self) -> Coordinate:
-#         current_movement = self._movements[self._movement_index]
-#         current_position = current_movement.step()
+    def step(self) -> Coordinate:
+        current_movement = self._movements[self._movement_index]
+        current_position = current_movement.step()
 
-#     def step_reverse(self) -> Coordinate:
-#         ...
+        if current_movement.is_at_endding():
+            self._movement_index += 1
+
+        self._movement_index = min(self._movement_index, len(self._movements) - 1)
+
+        return current_position
+
+    def step_reverse(self) -> Coordinate:
+        current_movement = self._movements[self._movement_index]
+        current_position = current_movement.step_reverse()
+
+        if current_movement.is_at_beginning():
+            self._movement_index -= 1
+
+        self._movement_index = max(0, self._movement_index)
+
+        return current_position
+
+    def is_at_beginning(self) -> bool:
+        current_movement = self._movements[self._movement_index]
+        is_first_index = self._movement_index == 0
+        return is_first_index and current_movement.is_at_beginning()
+
+    def is_at_endding(self) -> bool:
+        current_movement = self._movements[self._movement_index]
+        is_last_index = self._movement_index >= len(self._movements) - 1
+        return is_last_index and current_movement.is_at_endding()
+
+
+class LoopMovement(Movement):
+    def __init__(self, movement: Movement) -> None:
+        super().__init__()
+        self._movement = movement
+
+    def step(self) -> Coordinate:
+        current_position = self._movement.step()
+
+        if self.is_at_endding():
+            while not self._movement.is_at_beginning():
+                current_position = self._movement.step_reverse()
+
+        return current_position
+
+    def step_reverse(self) -> Coordinate:
+        current_position = self._movement.step_reverse()
+
+        if self.is_at_beginning():
+            while not self._movement.is_at_endding():
+                current_position = self._movement.step()
+
+        return current_position
+
+    def is_at_beginning(self) -> bool:
+        return self._movement.is_at_beginning()
+
+    def is_at_endding(self):
+        return self._movement.is_at_endding()
+
+
+class BoomerangLoopMovement(Movement):
+    def __init__(self, movement: Movement) -> None:
+        super().__init__()
+        self._movement = movement
+        self._is_reversed = False
+
+    def _update_reversed_status(self):
+        if self._movement.is_at_endding():
+            self._is_reversed = True
+        if self._movement.is_at_beginning():
+            self._is_reversed = False
+
+    def step(self) -> Coordinate:
+        self._update_reversed_status()
+
+        if self._is_reversed:
+            current_position = self._movement.step_reverse()
+        else:
+            current_position = self._movement.step()
+
+        return current_position
+
+    def step_reverse(self) -> Coordinate:
+        self._update_reversed_status()
+
+        if self._is_reversed:
+            current_position = self._movement.step()
+        else:
+            current_position = self._movement.step_reverse()
+
+        return current_position
+
+    def is_at_beginning(self) -> bool:
+        return self._movement.is_at_beginning()
+
+    def is_at_endding(self):
+        return self._movement.is_at_endding()
 
 
 @dataclass
@@ -150,3 +253,10 @@ class LinearMovement(Movement):
         self._update_position()
 
         return self._position
+
+    def is_at_beginning(self) -> bool:
+        return self._step_index == 0
+
+    def is_at_endding(self):
+        max_index = self.n_steps - 1
+        return self._step_index == max_index
