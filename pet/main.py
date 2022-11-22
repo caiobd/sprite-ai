@@ -7,8 +7,7 @@ from typing import Sequence
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
 
-from pet.sprite_sheet.animation import Animation, AnimationController
-from pet.sprite_sheet.movement import (
+from pet.movement import (
     BoomerangLoopMovement,
     ComposedMovement,
     Coordinate,
@@ -17,6 +16,7 @@ from pet.sprite_sheet.movement import (
     Movement,
     SequenceMovement,
 )
+from pet.sprite_sheet.animation import Animation, AnimationController
 from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from pet.sprite_widget import SpriteWidgetQt
 
@@ -134,7 +134,7 @@ def main():
     pet = Pet(sprite_sheet_metadata, animations, movements)
 
     pet.set_animation("walking_right")
-    pet.set_movement("walking_composed")
+    pet.set_movement("walking_squence_loop")
     pet.event_loop()
     pet._image_update_timer.cancel()
     pet._image_update_timer.join()
