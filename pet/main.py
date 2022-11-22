@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import sys
 import threading as th
+from typing import Sequence
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
 
 from pet.sprite_sheet.animation import Animation, AnimationController
-from pet.sprite_sheet.movement import Coordinate, LinearMovement, Movement
+from pet.sprite_sheet.movement import (BoomerangLoopMovement, Coordinate,
+                                       LinearMovement, LoopMovement, Movement,
+                                       ReversedMovement, SequenceMovement)
 from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from pet.sprite_widget import SpriteWidgetQt
 
@@ -45,8 +48,7 @@ class Pet:
         )
         self._position_update_timer.start()
         if self._movement is not None:
-            self._movement.step()
-            x, y = self._movement.position
+            x, y = self._movement.step()
             position = Coordinate(int(x), int(y))
             self.sprite_widget.position = position
 
@@ -80,6 +82,47 @@ def main():
         "walking": LinearMovement.from_tuple(
             (0, 0), (1000, 0), 100, loop=True, loop_reverse=True
         ),
+        "walking_loop": BoomerangLoopMovement(
+            LinearMovement.from_tuple((0, 0), (100, 0), 10)
+        ),
+        "walking_squence": SequenceMovement(
+            (
+                LinearMovement.from_tuple((0, 0), (100, 0), 10),
+                LinearMovement.from_tuple((100, 0), (100, 100), 10),
+                LinearMovement.from_tuple((100, 100), (0, 100), 10),
+                LinearMovement.from_tuple((0, 100), (0, 0), 10),
+            )
+        ),
+        "walking_squence_loop": LoopMovement(
+            SequenceMovement(
+                (
+                    LinearMovement.from_tuple((0, 0), (100, 0), 10),
+                    LinearMovement.from_tuple((100, 0), (100, 100), 10),
+                    LinearMovement.from_tuple((100, 100), (0, 100), 10),
+                    LinearMovement.from_tuple((0, 100), (0, 0), 10),
+                )
+            )
+        ),
+        "walking_squence_boomerangloop": BoomerangLoopMovement(
+            SequenceMovement(
+                (
+                    LinearMovement.from_tuple((0, 0), (100, 0), 10),
+                    LinearMovement.from_tuple((100, 0), (100, 100), 10),
+                    LinearMovement.from_tuple((100, 100), (0, 100), 10),
+                    LinearMovement.from_tuple((0, 100), (0, 0), 10),
+                )
+            )
+        ),
+        "walking_squence_reversed": ReversedMovement(
+            SequenceMovement(
+                (
+                    LinearMovement.from_tuple((0, 0), (100, 0), 10),
+                    LinearMovement.from_tuple((100, 0), (100, 100), 10),
+                    LinearMovement.from_tuple((100, 100), (0, 100), 10),
+                    LinearMovement.from_tuple((0, 100), (0, 0), 10),
+                )
+            )
+        ),
         "jumping": LinearMovement.from_tuple((0, 0), (0, 0.2), 500, loop=True),
     }
 
@@ -89,7 +132,7 @@ def main():
     pet = Pet(sprite_sheet_metadata, animations, movements)
 
     pet.set_animation("walking_right")
-    pet.set_movement("walking")
+    pet.set_movement("walking_squence_reversed")
     pet.event_loop()
     pet._image_update_timer.cancel()
     pet._image_update_timer.join()
