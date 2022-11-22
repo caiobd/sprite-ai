@@ -8,9 +8,15 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
 
 from pet.sprite_sheet.animation import Animation, AnimationController
-from pet.sprite_sheet.movement import (BoomerangLoopMovement, Coordinate,
-                                       LinearMovement, LoopMovement, Movement,
-                                       ReversedMovement, SequenceMovement)
+from pet.sprite_sheet.movement import (
+    BoomerangLoopMovement,
+    ComposedMovement,
+    Coordinate,
+    LinearMovement,
+    LoopMovement,
+    Movement,
+    SequenceMovement,
+)
 from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from pet.sprite_widget import SpriteWidgetQt
 
@@ -113,14 +119,10 @@ def main():
                 )
             )
         ),
-        "walking_squence_reversed": ReversedMovement(
-            SequenceMovement(
-                (
-                    LinearMovement.from_tuple((0, 0), (100, 0), 10),
-                    LinearMovement.from_tuple((100, 0), (100, 100), 10),
-                    LinearMovement.from_tuple((100, 100), (0, 100), 10),
-                    LinearMovement.from_tuple((0, 100), (0, 0), 10),
-                )
+        "walking_composed": ComposedMovement(
+            (
+                LinearMovement.from_tuple((0, 0), (0, 1000), 100),
+                LinearMovement.from_tuple((0, 0), (1000, 0), 100),
             )
         ),
         "jumping": LinearMovement.from_tuple((0, 0), (0, 0.2), 500, loop=True),
@@ -132,7 +134,7 @@ def main():
     pet = Pet(sprite_sheet_metadata, animations, movements)
 
     pet.set_animation("walking_right")
-    pet.set_movement("walking_squence_reversed")
+    pet.set_movement("walking_composed")
     pet.event_loop()
     pet._image_update_timer.cancel()
     pet._image_update_timer.join()
