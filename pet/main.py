@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import sys
 import threading as th
+from dataclasses import dataclass
 from typing import Sequence
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
 
+from pet.behaviour import Behaviour
 from pet.movement import (
     BoomerangLoopMovement,
     ComposedMovement,
@@ -23,10 +25,7 @@ from pet.sprite_widget import SpriteWidgetQt
 
 class Pet:
     def __init__(
-        self,
-        sprite_sheet_metadata: SpriteSheetMetadata,
-        animations: dict[str, Animation],
-        movements: dict[str, Movement],
+        self, sprite_sheet_metadata: SpriteSheetMetadata, behaviours: Behaviour
     ):
         self._app = QtWidgets.QApplication(sys.argv)
         self.sprite_widget = SpriteWidgetQt()
@@ -40,6 +39,7 @@ class Pet:
         self._image_update_timer: th.Timer = None
         self._position_update_timer: th.Timer = None
         self._movement: Movement = None
+        self._behaviour: Behaviour = None
 
     def _update_image_loop(self):
         self._image_update_timer = th.Timer(
@@ -132,7 +132,7 @@ def main():
     pet = Pet(sprite_sheet_metadata, animations, movements)
 
     pet.set_animation("walking_right")
-    pet.set_movement("walking")
+    pet.set_movement("walking_squence_loop")
     pet.event_loop()
     pet._image_update_timer.cancel()
     pet._image_update_timer.join()

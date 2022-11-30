@@ -2,9 +2,61 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Tuple
+from typing import Sequence, Tuple
+
+from pet.sprite_sheet.animation import Animation
 
 PositionTuple = Tuple[int, int, int, int]
+
+
+class Sprite:
+    def __init__(
+        self,
+        sprite_sheet_location: str | Path,
+        width: int,
+        height: int,
+        n_columns: int,
+        n_rows: int,
+        animations: dict[str, Animation] | None = None,
+        start_animation_name: str | None = None,
+    ) -> None:
+        self.metadata = SpriteSheetMetadata(
+            sprite_sheet_location, width, height, n_columns, n_rows
+        )
+        if animations == None:
+            animations = {}
+        self._animations = animations
+
+        self.current_animation = start_animation_name
+
+        if self.current_animation is not None:
+            self.set_animation(self.current_animation)
+        else:
+            self._animation: Animation | None = None
+
+    def get_animation_names(self) -> Tuple[str, ...]:
+        if self._animations == None:
+            return tuple()
+        return tuple(self._animations.keys())
+
+    def set_animations(self, animations: dict[str, Animation]):
+        self._animations = animations
+
+    def get_animations(self) -> dict[str, Animation]:
+        return self._animations
+
+    def get_animation(self) -> Animation | None:
+        return self._animation
+
+    def set_animation(self, animation_name: str):
+        if animation_name == None:
+            raise TypeError('The value of "animation_name" cant be None')
+        if self._animations == None:
+            raise ValueError(f"This sprite has no animations")
+        try:
+            self._animation = self._animations[animation_name]
+        except KeyError as ke:
+            raise ValueError(f'No matching animations with name "{animation_name}"')
 
 
 @dataclass
@@ -28,13 +80,13 @@ class SpriteSheetMetadata:
 class SpriteSheetIterator:
     sprite_sheet_metadata: SpriteSheetMetadata
     start_index: int = 0
-    end_index: int = None
-    frame_index: int = field(init=False, default=None)
+    end_index: int = -1
+    frame_index: int = field(init=False, default=0)
 
     def __post_init__(self):
-        if self.end_index is None:
+        if self.end_index == -1:
             self.end_index = (
-                self.sprite_sheet_metadata.n_cols * self.sprite_sheet_metadata.n_rows
+                self.sprite_sheet_metadata.n_columns * self.sprite_sheet_metadata.n_rows
             )
         self.frame_index = self.start_index
 
