@@ -99,6 +99,7 @@ class World:
         self.entities: dict[str, Any] = {}
         self.event_manager = event_manager.EventManager()
         self.world_clock_timer = None
+        self.last_target = None
         self.world_clock_loop()
 
     def update_entity_position(self, entity_name, position_update_message):
@@ -113,19 +114,78 @@ class World:
 
         current_time = round(time())
         self.event_manager.publish("world_clock", current_time)
+    
+    def get_moving_movement(self) -> Movement:
+        world_width, world_height = self.world_size
+        start_coordinate = self.last_target
+        if start_coordinate is None:
+            start_coordinate = Coordinate(
+                random.choice(range(world_width)), world_height
+            )
+        target_x = random.choice(range(world_width))
+        target_y = world_height
+        target_coordinate = Coordinate(target_x, target_y)
+        self.last_target = target_coordinate
+        movement = LinearMovement(start_coordinate, target_coordinate, 20)
+        return movement
+
+    def get_idle_movement(self):
+        world_width, world_height = self.world_size
+        coordinate = self.last_target
+        movement = LinearMovement(coordinate, coordinate, 2)
+        return movement
+
+    def get_jumping_movement(self) -> Movement:
+        world_width, world_height = self.world_size
+        start_coordinate = self.last_target
+        if start_coordinate is None:
+            start_coordinate = Coordinate(
+                world_width, random.choice(range(world_height))
+            )
+        target_x = world_width
+        target_y = random.choice(range(1000))
+        target_coordinate = Coordinate(target_x, target_y)
+        self.last_target = target_coordinate
+        movement = LinearMovement(start_coordinate, target_coordinate, 20)
+        return movement
 
     def change_movement_event(self, clock_time):
-        world_width, world_height = self.world_size
-
         if clock_time % 5 == 0:
-            target_x = random.choice(range(1000))
-            target_y = random.choice(range(1000))
-            start_coordinate = Coordinate(
-                random.choice(range(1000)), random.choice(range(1000))
-            )
-            target_coordinate = Coordinate(target_x, target_y)
-            movement = LinearMovement(start_coordinate, target_coordinate, 20)
+            world_width, world_height = self.world_size
+            states = ['moving', 'idle']
+            state = random.choice(states)
+
+            match state:
+                case 'moving': movement = self.get_moving_movement()
+                case 'idle': movement = self.get_idle_movement()
+                case _: pass
+            
+            if movement.start.x > movement.end.x:
+                movement_direction = 'left'
+            elif movement.start.x < movement.end.x:
+                movement_direction = 'right'
+            else:
+                movement_direction = random.choice(['left', 'right'])
+                movement_direction = None
+            
+            animation_choice_value = random.random()
+
+            if movement_direction is None:
+                if animation_choice_value < 0.2:
+
+                    animation = f"jumping_{movement_direction}"
+                else:
+                    animation = 'idle'
+            else:
+                if animation_choice_value < 0.1:
+                    animation = f"jumping_{movement_direction}"
+                else:
+                    animation = f"walking_{movement_direction}"                
+            
+            self.event_manager.publish("animation", animation)
+
             self.event_manager.publish("movement", movement)
+            
     
     def change_animation_event(self, clock_time):
         if not isinstance(clock_time, int):
@@ -135,7 +195,7 @@ class World:
             animation = random.choice(
                 ["idle", "walking_left", "walking_right", "jumping", "playing", "sliding"]
             )
-            self.event_manager.publish("animation", animation)
+            # self.event_manager.publish("animation", animation)
 
 
 def main():
@@ -143,7 +203,8 @@ def main():
         "idle": Animation(0, 0, 0.2),
         "walking_left": Animation(0, 3, 0.2),
         "walking_right": Animation(0, 3, 0.2, flip_x=True, flip_y=False),
-        "jumping": Animation(2, 4, 0.2),
+        "jumping_left": Animation(2, 4, 0.2),
+        "jumping_right": Animation(2, 4, 0.2, flip_x=True, flip_y=False),
         "playing": Animation(30, 33, 0.2),
         "sliding": Animation(19, 21, 0.2),
     }
