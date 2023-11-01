@@ -38,7 +38,7 @@ class Pet:
     ):
         self._app = QtWidgets.QApplication(sys.argv)
         screen_size = self._app.primaryScreen().size()
-        self.screen_size(screen_size.width(), screen_size.height())
+        self.screen_size = (screen_size.width(), screen_size.height())
         self.sprite_widget = SpriteWidgetQt()
         sprite_sheet_image = QPixmap(sprite_sheet_metadata.path)
         self.animation_controller = AnimationController(
@@ -93,45 +93,9 @@ class Pet:
     def set_animation(self, name: str):
         self.animation_controller.set_animation(name)
 
-
-def world_clock_loop():
-    world_clock_timer = th.Timer(1, world_clock_loop)
-    world_clock_timer.start()
-
-    current_time = round(time())
-    event_manager.publish("world_clock", current_time)
-
-
-def change_animation_event(clock_time):
-    if not isinstance(clock_time, int):
-        raise TypeError("This event must receive integers")
-
-    if clock_time % 2 == 0:
-        animation = random.choice(
-            ["idle", "walking_left", "walking_right", "jumping", "playing", "sliding"]
-        )
-        event_manager.publish("animation", animation)
-
-
-def change_movement_event(clock_time):
-    if clock_time % 5 == 0:
-        
-        target_x = random.choice(range(1000))
-        target_y = random.choice(range(1000))
-        start_coordinate = Coordinate(0, 0)
-        target_coordinate = Coordinate(target_x, target_y)
-        movement = LinearMovement(start_coordinate, target_coordinate, 20)
-        event_manager.publish("movement", movement)
-
-
-def event_loop():
-    world_clock_loop()
-    event_manager.subscribe("world_clock", change_animation_event)
-    event_manager.subscribe("world_clock", change_movement_event)
-
-
 class World:
-    def __init__(self) -> None:
+    def __init__(self, world_size) -> None:
+        self.world_size = world_size
         self.entities: dict[str, Any] = {}
         self.event_manager = event_manager.EventManager()
         self.world_clock_timer = None
@@ -143,16 +107,16 @@ class World:
 
         self.entities[entity_name] = position_update_message["new_position"]
 
-        print(entity_name, new_position, old_position, flush=True)
-
     def world_clock_loop(self):
-        self.world_clock_timer = th.Timer(1, world_clock_loop)
+        self.world_clock_timer = th.Timer(1, self.world_clock_loop)
         self.world_clock_timer.start()
 
         current_time = round(time())
-        event_manager.publish("world_clock", current_time)
+        self.event_manager.publish("world_clock", current_time)
 
-    def change_movement_event(clock_time):
+    def change_movement_event(self, clock_time):
+        world_width, world_height = self.world_size
+
         if clock_time % 5 == 0:
             target_x = random.choice(range(1000))
             target_y = random.choice(range(1000))
@@ -161,7 +125,17 @@ class World:
             )
             target_coordinate = Coordinate(target_x, target_y)
             movement = LinearMovement(start_coordinate, target_coordinate, 20)
-            event_manager.publish("movement", movement)
+            self.event_manager.publish("movement", movement)
+    
+    def change_animation_event(self, clock_time):
+        if not isinstance(clock_time, int):
+            raise TypeError("This event must receive integers")
+
+        if clock_time % 2 == 0:
+            animation = random.choice(
+                ["idle", "walking_left", "walking_right", "jumping", "playing", "sliding"]
+            )
+            self.event_manager.publish("animation", animation)
 
 
 def main():
@@ -174,20 +148,21 @@ def main():
         "sliding": Animation(19, 21, 0.2),
     }
 
-    world = World()
     sprite_sheet_metadata = SpriteSheetMetadata(
         "resources/sprites/fred.png", 5888, 128, 46, 1
     )
+    world = World((3840,2160))
     pet = Pet(sprite_sheet_metadata, animations)
-    screen = pet.primaryScreen()
+    world_size = pet.screen_size
     update_pet_position = partial(world.update_entity_position, "pet")
     pet.on_position_updated = update_pet_position
     pet.set_animation("sliding")
 
-    event_manager.subscribe("animation", pet.set_animation)
-    event_manager.subscribe("movement", pet.set_movement)
+    world.event_manager.subscribe("animation", pet.set_animation)
+    world.event_manager.subscribe("movement", pet.set_movement)
+    world.event_manager.subscribe("world_clock", world.change_animation_event)
+    world.event_manager.subscribe("world_clock", world.change_movement_event)
 
-    event_loop()
     pet.gui_loop()
     pet._image_update_timer.cancel()
     pet._image_update_timer.join()

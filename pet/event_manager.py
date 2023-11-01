@@ -17,6 +17,7 @@ class EventManager:
             message (Any): A object to be passed as message
             topic (str): A topic to publish the object to
         """
+        print(f'[{topic}] {message}')
         with self.lock:
             topic_callbacks = self.inscriptions[topic]
 
@@ -43,18 +44,3 @@ class EventManager:
             list: callbacks subscribed to topic
         """
         return self.inscriptions[topic]
-
-
-_event_manager = EventManager()
-
-
-def publish(topic: str, message: Any = None):
-    _event_manager.publish(topic, message)
-
-
-def subscribe(topic: str, callback: Callback):
-    _event_manager.subscribe(topic, callback)
-
-
-def subscribers(topic: str):
-    return _event_manager.subscribers(topic)
