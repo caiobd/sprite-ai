@@ -4,6 +4,9 @@ from abc import ABC, abstractmethod
 
 from PyQt5 import QtCore, QtWidgets
 
+from pet.movement.coordinate import Coordinate
+from pet.movement.typing_utils import Numeric
+
 
 class SpriteWidget(ABC):
     @property
@@ -53,6 +56,7 @@ class SpriteWidgetQt(SpriteWidget):
         )
         # Overrides paintEvent from QWidget
         self.qwidget.paintEvent = self._update_image
+        self.position = (0, 0)
 
     def _update_image(self, evt):
         if self._canvas is not None and self.image is not None:
@@ -68,14 +72,16 @@ class SpriteWidgetQt(SpriteWidget):
         self._image = value
 
     @property
-    def position(self):
+    def position(self) -> Coordinate:
         return self._position
 
     @position.setter
-    def position(self, xy_coordinates: tuple[int, int]):
-        self._position = xy_coordinates
-        if xy_coordinates is not None:
-            self.qwidget.move(*xy_coordinates)
+    def position(self, xy_coordinates: tuple[Numeric, Numeric] | Coordinate):
+        x, y = xy_coordinates
+        x = int(x)
+        y = int(y)
+        self._position = Coordinate(x, y)
+        self.qwidget.move(x, y)
 
     def show(self):
         self.qwidget.show()
