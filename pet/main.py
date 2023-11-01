@@ -165,14 +165,13 @@ class World:
             elif movement.start.x < movement.end.x:
                 movement_direction = 'right'
             else:
-                movement_direction = random.choice(['left', 'right'])
                 movement_direction = None
             
             animation_choice_value = random.random()
 
             if movement_direction is None:
                 if animation_choice_value < 0.2:
-
+                    movement_direction = random.choice(['left', 'right'])
                     animation = f"jumping_{movement_direction}"
                 else:
                     animation = 'idle'
