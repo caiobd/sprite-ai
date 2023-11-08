@@ -5,8 +5,14 @@ description = ""
 authors = ["Caio D <caiobd@protonmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.8.1"
 PyQt5 = "^5.15.7"
+python-rofi = "^1.0.1"
+pyperclip = "^1.8.2"
+pydantic = "^2.4.2"
+pyyaml = "^6.0.1"
+langchain = "^0.0.327"
+llama-cpp-python = "^0.2.12"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^22.6.0", allow-prereleases = true}

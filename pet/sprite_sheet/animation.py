@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import logging
 import threading as th
 from dataclasses import dataclass
@@ -81,7 +82,6 @@ class AnimationController:
         )
         self._animations = animations
         self._animation: Animation | None = None
-        self.current_animation = None
         self.sprite_sheet_iterator = SpriteSheetIterator(
             self.sprite_sheet_metadata,
             0,
@@ -95,19 +95,23 @@ class AnimationController:
         self._x_flipped = False
         self._y_flipped = False
 
-    def set_animation(self, name: str):
+    def set_animation(self, name: str, flip_x: bool=False, flip_y: bool=False):
         if self._animations == None:
             raise TypeError("Animations must be set and not None")
         try:
-            animation: Animation = self._animations[name]
-            self.current_animation = name
+            animation: Animation = copy.copy(self._animations[name])
+            print(animation)
+            animation.flip_x = flip_x
+            animation.flip_y = flip_y
             self._animation = animation
             self.sprite_sheet_iterator.start_index = animation.start_index
             self.sprite_sheet_iterator.end_index = animation.end_index
             self.sprite_sheet_iterator.reset()
         except KeyError as ke:
+            animation_names: list[str] = []
+            animation_names = self._animations.keys()
             raise ValueError(
-                f'Invalid animations name: "{name}", please use one of {self._animations.keys()}'
+                f'Invalid animations name: "{name}", please use one of {animation_names}'
             )
 
     def reset(self):
@@ -162,6 +166,7 @@ class AnimationController:
             y_transform = -1
 
         image_transform = QTransform.fromScale(x_transform, y_transform)
+        
         transformed_canvas_image = self.canvas_image.transformed(image_transform)
         self.canvas_image.fill(Qt.transparent)
         painter.drawPixmap(0, 0, transformed_canvas_image)
