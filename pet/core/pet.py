@@ -18,6 +18,7 @@ class Pet:
 
         self.world.event_manager.subscribe('animation', self.on_animation_event)
         self.world.event_manager.subscribe('movement', self.on_movement_event)
+        self.world.event_manager.subscribe('state', self.set_state)
         self.world.event_manager.subscribe("world_clock", self.on_clocktick)
         self.animation = None
         self.set_state('walking')
