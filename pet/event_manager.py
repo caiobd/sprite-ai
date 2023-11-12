@@ -17,7 +17,7 @@ class EventManager:
             message (Any): A object to be passed as message
             topic (str): A topic to publish the object to
         """
-        print(f'[{topic}] {message}')
+        print(f"[{topic}] {message}")
         with self.lock:
             topic_callbacks = self.inscriptions[topic]
 

@@ -19,7 +19,8 @@ class ChatMessage(BaseModel):
     content: str
 
     def __str__(self) -> str:
-        return f'{self.sender}: {self.content}'
+        return f"{self.sender}: {self.content}"
+
 
 class ChatState(BaseModel):
     chat_history: list[ChatMessage] = []
@@ -29,10 +30,11 @@ class ChatState(BaseModel):
         with open(file_location) as state_file:
             chat_state = yaml.safe_load(state_file)
         return cls(**chat_state)
-    
+
     def to_file(self, file_location: str):
-        with open(file_location, 'w') as state_file:
+        with open(file_location, "w") as state_file:
             yaml.safe_dump(self.model_dump(), state_file)
+
 
 @dataclass
 class Command:
@@ -42,8 +44,15 @@ class Command:
     def __str__(self) -> str:
         return self.name
 
+
 class ChatWindow:
-    def __init__(self, language_model: LanguageModel|None, chat_state: ChatState|None=None, on_chat_message: Callable|None = None, on_canceled: Callable|None = None) -> None:
+    def __init__(
+        self,
+        language_model: LanguageModel | None,
+        chat_state: ChatState | None = None,
+        on_chat_message: Callable | None = None,
+        on_canceled: Callable | None = None,
+    ) -> None:
         if chat_state is None:
             chat_state = ChatState()
         self.chat_state = chat_state
@@ -51,15 +60,15 @@ class ChatWindow:
         # Implement command pattern here and inject commands via init
         # This allows for better extensibility and modularity
         self.commands = [
-            Command('[x] exit', lambda: os._exit(0)),
-            Command('+ new message', self._new_message_menu),
+            Command("[x] exit", lambda: os._exit(0)),
+            Command("+ new message", self._new_message_menu),
         ]
         self.language_model = language_model
         self._rofi = Rofi()
         self._pool = ThreadPoolExecutor()
         self._on_chat_message = on_chat_message
         self._on_canceled = on_canceled
-    
+
     def show(self):
         self._main_menu()
 
@@ -68,40 +77,41 @@ class ChatWindow:
         options = self.chat_state.chat_history + self.commands
         options.reverse()
         return options
-    
+
     @property
     def options_names(self):
         options = [str(option) for option in self.options]
         return options
 
     def _new_message_menu(self):
-        message = ''
+        message = ""
         chat_history = self.chat_state.chat_history
         if chat_history:
             message = str(chat_history[-1])
-        reponse = self._rofi.text_entry('👷 | you', message)
+        reponse = self._rofi.text_entry("👷 | you", message)
         if reponse is None:
             self._on_canceled()
             return
-        
-        chat_message = ChatMessage(sender='👷 | you', content=reponse)
-        chat_history.append(chat_message)
-            
 
-        message_future = self._pool.submit(self.language_model.awnser, chat_message.content)
+        chat_message = ChatMessage(sender="👷 | you", content=reponse)
+        chat_history.append(chat_message)
+
+        message_future = self._pool.submit(
+            self.language_model.awnser, chat_message.content
+        )
 
         message_future.add_done_callback(self._log_chat_awnser)
         if self._on_chat_message is not None:
             message_future.add_done_callback(self._on_chat_message)
-    
+
     def _log_chat_awnser(self, message_future: Future):
         message: str = message_future.result()
-        chat_message_awnser = ChatMessage(sender='😸 | cat', content=message)
+        chat_message_awnser = ChatMessage(sender="😸 | cat", content=message)
         self.chat_state.chat_history.append(chat_message_awnser)
 
     def _main_menu(self):
-        index, key = self._rofi.select('Option', self.options_names)
-        
+        index, key = self._rofi.select("Option", self.options_names)
+
         if key == -1 or index == -1:
             self._on_canceled()
             return

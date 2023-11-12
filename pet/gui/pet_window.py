@@ -1,5 +1,3 @@
-
-
 import sys
 import threading
 from typing import Any, Callable
@@ -23,7 +21,7 @@ class PetGui:
         sprite_sheet_metadata: SpriteSheetMetadata,
         animations: dict[str, Animation],
         on_position_updated: Callable | None = None,
-        on_clicked: Callable|None = None,
+        on_clicked: Callable | None = None,
     ):
         self._app = QtWidgets.QApplication(sys.argv)
         screen_size = self._app.primaryScreen().size()
@@ -40,7 +38,7 @@ class PetGui:
         self._movement: LinearMovement | None = None
         self.on_position_updated = on_position_updated
         if on_clicked is not None:
-            self.sprite_widget.qwidget.mouseReleaseEvent=on_clicked
+            self.sprite_widget.qwidget.mouseReleaseEvent = on_clicked
 
     def _update_image_loop(self):
         self._image_update_timer = threading.Timer(
@@ -72,13 +70,12 @@ class PetGui:
 
     def gui_loop(self):
         width, height = self.screen_size
-        self.sprite_widget.position = (width//2, height)
+        self.sprite_widget.position = (width // 2, height)
         self.sprite_widget.show()
         self._update_image_loop()
         self._update_position_loop()
         self.animation_controller.play()
         self._app.exec()
-    
 
     def set_movement(self, movement: LinearMovement):
         self.animation_controller.set_orientation(movement.orientation)
@@ -90,7 +87,7 @@ class PetGui:
         if self._movement:
             orientation = self._movement.orientation
             self.animation_controller.set_orientation(orientation)
-    
+
     def run(self):
         try:
             self.gui_loop()

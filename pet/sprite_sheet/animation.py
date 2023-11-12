@@ -93,14 +93,14 @@ class AnimationController:
 
         self._x_flipped = False
         self._y_flipped = False
-        self._orientation = 'right'
+        self._orientation = "right"
 
-    def set_animation(self, name: str, flip_x: bool=False, flip_y: bool=False):
+    def set_animation(self, name: str, flip_x: bool = False, flip_y: bool = False):
         if self._animations == None:
             raise TypeError("Animations must be set and not None")
         try:
             animation: Animation = self._animations[name]
-            
+
             animation.flip_x = flip_x
             animation.flip_y = flip_y
             self._animation = animation
@@ -113,15 +113,15 @@ class AnimationController:
             raise ValueError(
                 f'Invalid animations name: "{name}", please use one of {animation_names}'
             )
-    
+
     def _update_orientation(self):
-        flip_x = self._orientation == 'right'
+        flip_x = self._orientation == "right"
         self._animation.flip_x = flip_x
 
     def set_orientation(self, orientation: str):
         self._orientation = orientation
         self._update_orientation()
-    
+
     def get_orientation(self):
         return self._orientation
 
@@ -175,9 +175,9 @@ class AnimationController:
             x_transform = -1
         if self._animation.flip_y:
             y_transform = -1
-        
+
         image_transform = QTransform.fromScale(x_transform, y_transform)
-        
+
         transformed_canvas_image = self.canvas_image.transformed(image_transform)
         self.canvas_image.fill(Qt.transparent)
         painter.drawPixmap(0, 0, transformed_canvas_image)

@@ -18,10 +18,10 @@ class LinearMovement(Movement):
 
     @property
     def orientation(self) -> str:
-        orientation = 'right'
+        orientation = "right"
         if self.start.x > self.end.x:
-            orientation = 'left'
-        
+            orientation = "left"
+
         return orientation
 
     @property

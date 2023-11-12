@@ -9,7 +9,6 @@ from pet.event_manager import EventManager
 # from pet.core.pet import Pet
 
 
-
 class World:
     def __init__(self, world_size) -> None:
         self.world_size = world_size
@@ -35,4 +34,4 @@ class World:
     def update_state_event(self, clock_time: int, pet: Pet):
         if clock_time % 5 == 0:
             pet.next_state()
-            print(f'<new state> {pet.get_state()}')
+            print(f"<new state> {pet.get_state()}")

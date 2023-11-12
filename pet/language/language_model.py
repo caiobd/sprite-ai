@@ -16,19 +16,19 @@ class LanguageModel:
     system_prompt: str = ""
     model_temperature: float = 0.7
     context_size: int = 4096
-    llm_chain: LLMChain|None = None
+    llm_chain: LLMChain | None = None
 
     def _build_prompt_template(self) -> PromptTemplate:
         prompt_template = (
-        '<|im_start|>system\n'
-        '{system_prompt}<|im_end|>\n'
-        'Chat History:\n'
-        '{chat_history}\n'
-        '<|im_start|>user\n'
-        '{user_input}<|im_end|>\n'
-        '<|im_start|>assistant\n'
+            "<|im_start|>system\n"
+            "{system_prompt}<|im_end|>\n"
+            "Chat History:\n"
+            "{chat_history}\n"
+            "<|im_start|>user\n"
+            "{user_input}<|im_end|>\n"
+            "<|im_start|>assistant\n"
         )
-        
+
         prompt_template = prompt_template.format(
             system_prompt=self.system_prompt,
             chat_history="{chat_history}",
@@ -48,7 +48,7 @@ class LanguageModel:
             # n_gpu_layers=40,
             temperature=self.model_temperature,
             echo=False,
-            stop=['<|im_end|>'],
+            stop=["<|im_end|>"],
         )  # type: ignore
         memory = ConversationSummaryBufferMemory(
             llm=llm,
@@ -64,23 +64,23 @@ class LanguageModel:
             verbose=False,
         )
         self.llm_chain = llm_chain
-    
+
     def awnser(self, prompt: str):
         if self.llm_chain:
             awnser = self.llm_chain.predict(user_input=prompt)
         else:
-            raise RuntimeError('Failed to load llm model')
+            raise RuntimeError("Failed to load llm model")
         return awnser
-    
+
     def messages(self):
         return self.llm_chain.memory.chat_memory.messages
 
     @classmethod
     def from_file(cls, file_location: str):
-        with open(file_location, 'rb') as state_file:
+        with open(file_location, "rb") as state_file:
             chat_state = pickle.load(state_file)
         return chat_state
-    
+
     def to_file(self, file_location: str):
-        with open(file_location, 'wb') as state_file:
+        with open(file_location, "wb") as state_file:
             pickle.dump(self, state_file)
