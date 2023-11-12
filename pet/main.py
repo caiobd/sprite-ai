@@ -71,6 +71,9 @@ def on_notification(world: World, event_future: Future):
     )
     world.event_manager.publish('state', 'jumping_idle')
 
+def on_caceled(world: World):
+    world.event_manager.publish('state', 'walking')
+
 def main():
     sprite_sheet_location = str(resources.path('pet.resources.sprites', 'fred.png'))
     print(sprite_sheet_location)
@@ -81,7 +84,12 @@ def main():
     language_model = load_language_model()
     chat_state = load_chat_state()
 
-    chat_window = ChatWindow(language_model, chat_state, chat_message_callback=lambda event_future: on_notification(world, event_future))
+    chat_window = ChatWindow(
+        language_model, 
+        chat_state, 
+        on_chat_message=lambda event_future: on_notification(world, event_future),
+        on_caceled=lambda: on_caceled(world)
+    )
     pet_gui = PetGui(sprite_sheet_metadata, ANIMATIONS, on_clicked=lambda event: on_pet_clicked(world, chat_window))
     
     pet = Pet(pet_gui=pet_gui, pet_behaviour=pet_behaviour, world=world)

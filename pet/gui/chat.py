@@ -42,7 +42,7 @@ class Command:
         return self.name
 
 class ChatWindow:
-    def __init__(self, language_model: LanguageModel|None, chat_state: ChatState|None=None, chat_message_callback: Callable|None = None) -> None:
+    def __init__(self, language_model: LanguageModel|None, chat_state: ChatState|None=None, on_chat_message: Callable|None = None, on_caceled: Callable|None = None) -> None:
         if chat_state is None:
             chat_state = ChatState()
         self.chat_state = chat_state
@@ -56,7 +56,8 @@ class ChatWindow:
         self.language_model = language_model
         self._rofi = Rofi()
         self._pool = ThreadPoolExecutor()
-        self._chat_message_callback = chat_message_callback
+        self._on_chat_message = on_chat_message
+        self._on_canceled = on_caceled
     
     def show(self):
         self._main_menu()
@@ -84,8 +85,8 @@ class ChatWindow:
         message_future = self._pool.submit(self.language_model.awnser, chat_message.content)
 
         message_future.add_done_callback(self._log_chat_awnser)
-        if self._chat_message_callback is not None:
-            message_future.add_done_callback(self._chat_message_callback)
+        if self._on_chat_message is not None:
+            message_future.add_done_callback(self._on_chat_message)
     
     def _log_chat_awnser(self, message_future: Future):
         message: str = message_future.result()
@@ -96,6 +97,7 @@ class ChatWindow:
         index, key = self._rofi.select('Option', self.options_names)
         
         if key == -1 or index == -1:
+            self._on_canceled()
             return
         if index < len(self.commands):
             command = self.options[index]
