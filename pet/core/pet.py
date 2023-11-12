@@ -21,7 +21,7 @@ class Pet:
         self.world.event_manager.subscribe('state', self.set_state)
         self.world.event_manager.subscribe("world_clock", self.on_clocktick)
         self.animation = None
-        self.set_state('walking')
+        self._update_state()
     
     def _update_state(self):
         state = self.pet_behaviour.get_state()
@@ -45,11 +45,15 @@ class Pet:
         old_position = position_update['old_position']
         new_position = position_update['new_position']
 
+        old_orientation = self.orientation
         if old_position.x > new_position.x:
             self.orientation = 'left'
         elif old_position.x < new_position.x:
             self.orientation = 'right'
         self.current_position = new_position
+
+        if self.orientation != old_orientation:
+            print(f'[CHANGED ORIENTATION] {self.orientation = } {old_position.x > new_position.x = }')
     
     def on_animation_event(self, animation: str):
         flip_x = self.orientation == 'right'

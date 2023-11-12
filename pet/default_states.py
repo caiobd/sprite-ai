@@ -3,6 +3,14 @@ from __future__ import annotations
 from pet.core.pet_state import PetState
 
 POSSIBLE_STATES = {
+    'appearing': PetState(
+        name='idle',
+        animation='appearing', 
+        movement='idle',
+        state_transitions={
+            'walking': 1, 
+        }
+    ),
     'idle': PetState(
         name='idle',
         animation='idle', 

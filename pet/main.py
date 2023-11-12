@@ -78,7 +78,7 @@ def on_canceled(world: World):
 def main():
     sprite_sheet_location = str(resources.path('pet.resources.sprites', 'fred.png'))
     print(sprite_sheet_location)
-    pet_behaviour = PetBehaviour(possible_states=POSSIBLE_STATES, first_state='idle')
+    pet_behaviour = PetBehaviour(possible_states=POSSIBLE_STATES, first_state='appearing')
     sprite_sheet_metadata = SpriteSheetMetadata(sprite_sheet_location, 5888, 128, 46, 1)
     world = World((3840,2160))
 
@@ -102,7 +102,9 @@ def main():
     except KeyboardInterrupt as e:
         print('exiting...')
         os._exit(0)
-
+    finally:
+        print('saving model...')
+        chat_window.language_model.to_file(MODEL_FILE)
 
 
 if __name__ == "__main__":
