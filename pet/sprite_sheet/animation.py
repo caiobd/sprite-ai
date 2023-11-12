@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import logging
 import threading as th
 from dataclasses import dataclass
 
@@ -94,13 +93,14 @@ class AnimationController:
 
         self._x_flipped = False
         self._y_flipped = False
+        self._orientation = 'right'
 
     def set_animation(self, name: str, flip_x: bool=False, flip_y: bool=False):
         if self._animations == None:
             raise TypeError("Animations must be set and not None")
         try:
-            animation: Animation = copy.copy(self._animations[name])
-            print(animation)
+            animation: Animation = self._animations[name]
+            
             animation.flip_x = flip_x
             animation.flip_y = flip_y
             self._animation = animation
@@ -113,6 +113,17 @@ class AnimationController:
             raise ValueError(
                 f'Invalid animations name: "{name}", please use one of {animation_names}'
             )
+    
+    def _update_orientation(self):
+        flip_x = self._orientation == 'right'
+        self._animation.flip_x = flip_x
+
+    def set_orientation(self, orientation: str):
+        self._orientation = orientation
+        self._update_orientation()
+    
+    def get_orientation(self):
+        return self._orientation
 
     def reset(self):
         self.sprite_sheet_iterator.reset()
@@ -164,7 +175,7 @@ class AnimationController:
             x_transform = -1
         if self._animation.flip_y:
             y_transform = -1
-
+        
         image_transform = QTransform.fromScale(x_transform, y_transform)
         
         transformed_canvas_image = self.canvas_image.transformed(image_transform)

@@ -17,6 +17,14 @@ class LinearMovement(Movement):
     step_increment: int = field(default=1, init=False)
 
     @property
+    def orientation(self) -> str:
+        orientation = 'right'
+        if self.start.x > self.end.x:
+            orientation = 'left'
+        
+        return orientation
+
+    @property
     def position(self) -> Coordinate | None:
         return self._position
 

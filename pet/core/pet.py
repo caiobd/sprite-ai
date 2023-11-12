@@ -10,7 +10,6 @@ class Pet:
         self.pet_gui = pet_gui
         self.pet_behaviour = pet_behaviour
         self.world = world
-        self.orientation: str = 'left'
         width, height = world.world_size
         self.current_position = Coordinate(width//2, height)
         self.movement_factory = MovementFactory(world.world_size)
@@ -44,28 +43,18 @@ class Pet:
     def on_position_update(self, position_update: dict[str, Coordinate]):
         old_position = position_update['old_position']
         new_position = position_update['new_position']
-
-        old_orientation = self.orientation
-        if old_position.x > new_position.x:
-            self.orientation = 'left'
-        elif old_position.x < new_position.x:
-            self.orientation = 'right'
         self.current_position = new_position
 
-        if self.orientation != old_orientation:
-            print(f'[CHANGED ORIENTATION] {self.orientation = } {old_position.x > new_position.x = }')
     
     def on_animation_event(self, animation: str):
-        flip_x = self.orientation == 'right'
         self.animation = animation
-        self.pet_gui.set_animation(animation, flip_x=flip_x)
+        self.pet_gui.set_animation(animation)
     
     def on_movement_event(self, movement_name: str):
         movement = self.movement_factory.build(movement_name, self.current_position)
         
         if self.animation is not None:
-            flip_x = self.orientation == 'right'
-            self.pet_gui.set_animation(self.animation, flip_x=flip_x)
+            self.pet_gui.set_animation(self.animation)
         
         self.pet_gui.set_movement(movement)
     

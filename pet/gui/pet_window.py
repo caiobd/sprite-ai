@@ -11,6 +11,7 @@ from PyQt5.QtGui import QPixmap
 
 from pet.movement import Movement
 from pet.movement.coordinate import Coordinate
+from pet.movement.linear_movement import LinearMovement
 from pet.sprite_sheet.animation import Animation, AnimationController
 from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from pet.sprite_widget import SpriteWidgetQt
@@ -36,7 +37,7 @@ class PetGui:
         self.position_update_rate: float | int = 0.2
         self._image_update_timer: threading.Timer | None = None
         self._position_update_timer: threading.Timer | None = None
-        self._movement: Movement | None = None
+        self._movement: LinearMovement | None = None
         self.on_position_updated = on_position_updated
         if on_clicked is not None:
             self.sprite_widget.qwidget.mouseReleaseEvent=on_clicked
@@ -77,12 +78,18 @@ class PetGui:
         self._update_position_loop()
         self.animation_controller.play()
         self._app.exec()
+    
 
-    def set_movement(self, movement: Movement):
+    def set_movement(self, movement: LinearMovement):
+        self.animation_controller.set_orientation(movement.orientation)
         self._movement = movement
 
-    def set_animation(self, name: str, flip_y: bool=False, flip_x: bool=False):
-        self.animation_controller.set_animation(name, flip_y=flip_y, flip_x=flip_x)
+    def set_animation(self, name: str):
+        self.animation_controller.set_animation(name)
+
+        if self._movement:
+            orientation = self._movement.orientation
+            self.animation_controller.set_orientation(orientation)
     
     def run(self):
         try:
