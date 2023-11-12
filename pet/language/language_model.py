@@ -71,6 +71,9 @@ class LanguageModel:
         else:
             raise RuntimeError('Failed to load llm model')
         return awnser
+    
+    def messages(self):
+        return self.llm_chain.memory.chat_memory.messages
 
     @classmethod
     def from_file(cls, file_location: str):

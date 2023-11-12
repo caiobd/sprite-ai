@@ -1,6 +1,7 @@
 # from __future__ import annotations
 
 from concurrent.futures import Future
+import os
 import threading as th
 
 from plyer import notification
@@ -71,7 +72,7 @@ def on_notification(world: World, event_future: Future):
     )
     world.event_manager.publish('state', 'jumping_idle')
 
-def on_caceled(world: World):
+def on_canceled(world: World):
     world.event_manager.publish('state', 'walking')
 
 def main():
@@ -88,7 +89,7 @@ def main():
         language_model, 
         chat_state, 
         on_chat_message=lambda event_future: on_notification(world, event_future),
-        on_caceled=lambda: on_caceled(world)
+        on_canceled=lambda: on_canceled(world),
     )
     pet_gui = PetGui(sprite_sheet_metadata, ANIMATIONS, on_clicked=lambda event: on_pet_clicked(world, chat_window))
     
@@ -100,7 +101,8 @@ def main():
         pet.run()
     except KeyboardInterrupt as e:
         print('exiting...')
-        exit(0)
+        os._exit(0)
+
 
 
 if __name__ == "__main__":

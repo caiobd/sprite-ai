@@ -1,4 +1,5 @@
 from concurrent.futures import Future, ThreadPoolExecutor
+import os
 from threading import Thread
 import time
 import sys
@@ -42,7 +43,7 @@ class Command:
         return self.name
 
 class ChatWindow:
-    def __init__(self, language_model: LanguageModel|None, chat_state: ChatState|None=None, on_chat_message: Callable|None = None, on_caceled: Callable|None = None) -> None:
+    def __init__(self, language_model: LanguageModel|None, chat_state: ChatState|None=None, on_chat_message: Callable|None = None, on_canceled: Callable|None = None) -> None:
         if chat_state is None:
             chat_state = ChatState()
         self.chat_state = chat_state
@@ -50,14 +51,14 @@ class ChatWindow:
         # Implement command pattern here and inject commands via init
         # This allows for better extensibility and modularity
         self.commands = [
-            Command('[x] exit', sys.exit),
+            Command('[x] exit', lambda: os._exit(0)),
             Command('+ new message', self._new_message_menu),
         ]
         self.language_model = language_model
         self._rofi = Rofi()
         self._pool = ThreadPoolExecutor()
         self._on_chat_message = on_chat_message
-        self._on_canceled = on_caceled
+        self._on_canceled = on_canceled
     
     def show(self):
         self._main_menu()
@@ -79,8 +80,13 @@ class ChatWindow:
         if chat_history:
             message = str(chat_history[-1])
         reponse = self._rofi.text_entry('👷 | you', message)
+        if reponse is None:
+            self._on_canceled()
+            return
+        
         chat_message = ChatMessage(sender='👷 | you', content=reponse)
         chat_history.append(chat_message)
+            
 
         message_future = self._pool.submit(self.language_model.awnser, chat_message.content)
 
@@ -105,3 +111,4 @@ class ChatWindow:
         else:
             selected_message = self.options[index]
             pyperclip.copy(selected_message.content)
+            self._on_canceled()
