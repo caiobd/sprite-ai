@@ -5,7 +5,7 @@ description = ""
 authors = ["Caio D <caiobd@protonmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = ">=3.8.1,<3.13"
 PyQt5 = "^5.15.7"
 python-rofi = "^1.0.1"
 pyperclip = "^1.8.2"
@@ -14,6 +14,7 @@ pyyaml = "^6.0.1"
 langchain = "^0.0.327"
 llama-cpp-python = "^0.2.12"
 dbus-python = "^1.3.2"
+plyer = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^22.6.0", allow-prereleases = true}
@@ -22,7 +23,11 @@ black = {version = "^22.6.0", allow-prereleases = true}
 isort = "^5.10.1"
 pytest = "^7.2.0"
 mypy = "^0.991"
+pyinstaller = "^6.2.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+pet = "pet.main:main"
