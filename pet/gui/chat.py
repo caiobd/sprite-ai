@@ -82,7 +82,7 @@ class ChatWindow:
 
         user_message = self._rofi.text_entry("👷 | you", last_message)
         if user_message is None:
-            self._on_canceled()
+            self.on_canceled()
             return
         self.chat_session.send_message(user_message)
 
