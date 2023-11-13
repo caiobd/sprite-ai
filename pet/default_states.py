@@ -11,15 +11,24 @@ POSSIBLE_STATES = {
             "walking": 1,
         },
     ),
+    "thinking": PetState(
+        name="thinking",
+        animation="thinking",
+        movement="idle",
+        state_transitions={
+            "thinking": 1,
+        },
+    ),
     "idle": PetState(
         name="idle",
         animation="idle",
         movement="idle",
         state_transitions={
-            "idle": 1 / 7,
-            "walking": 2 / 7,
-            "jumping_idle": 2 / 7,
-            "jumping_walking": 2 / 7,
+            "idle": 1 / 9,
+            "walking": 2 / 9,
+            "jumping_idle": 2 / 9,
+            "jumping_walking": 2 / 9,
+            "sliding": 2 / 9,
         },
     ),
     "walking": PetState(
@@ -27,10 +36,11 @@ POSSIBLE_STATES = {
         animation="walking",
         movement="walking",
         state_transitions={
-            "idle": 2 / 7,
-            "walking": 1 / 7,
-            "jumping_idle": 2 / 7,
-            "jumping_walking": 2 / 7,
+            "idle": 2 / 9,
+            "walking": 1 / 9,
+            "jumping_idle": 2 / 9,
+            "jumping_walking": 2 / 9,
+            "sliding": 2 / 9,
         },
     ),
     "jumping_idle": PetState(
@@ -38,10 +48,11 @@ POSSIBLE_STATES = {
         animation="walking",
         movement="walking",
         state_transitions={
-            "idle": 2 / 7,
-            "walking": 1 / 7,
-            "jumping_idle": 2 / 7,
-            "jumping_walking": 2 / 7,
+            "idle": 2 / 9,
+            "walking": 2 / 9,
+            "jumping_idle": 1 / 9,
+            "jumping_walking": 2 / 9,
+            "sliding": 2 / 9,
         },
     ),
     "jumping_walking": PetState(
@@ -49,18 +60,23 @@ POSSIBLE_STATES = {
         animation="jumping",
         movement="walking",
         state_transitions={
-            "idle": 2 / 7,
-            "walking": 2 / 7,
-            "jumping_idle": 2 / 7,
-            "jumping_walking": 1 / 7,
+            "idle": 2 / 9,
+            "walking": 2 / 9,
+            "jumping_idle": 2 / 9,
+            "jumping_walking": 1 / 9,
+            "sliding": 2 / 9,
         },
     ),
-    "thinking": PetState(
-        name="thinking",
-        animation="thinking",
-        movement="idle",
+    "sliding": PetState(
+        name="sliding",
+        animation="sliding",
+        movement="walking",
         state_transitions={
-            "thinking": 1,
+            "idle": 2 / 9,
+            "walking": 2 / 9,
+            "jumping_idle": 2 / 9,
+            "jumping_walking": 2 / 9,
+            "sliding": 1 / 9,
         },
     ),
 }
