@@ -1,39 +1,14 @@
 from concurrent.futures import Future, ThreadPoolExecutor
 import os
-from threading import Thread
-import time
-import sys
 from dataclasses import dataclass
 from typing import Callable
 
 import pyperclip
-import yaml
-from pydantic import BaseModel
 from rofi import Rofi
+from pet.language.chat_message import ChatMessage
+from pet.language.chat_session import ChatSession
 
 from pet.language.language_model import LanguageModel
-
-
-class ChatMessage(BaseModel):
-    sender: str
-    content: str
-
-    def __str__(self) -> str:
-        return f"{self.sender}: {self.content}"
-
-
-class ChatState(BaseModel):
-    chat_history: list[ChatMessage] = []
-
-    @classmethod
-    def from_file(cls, file_location: str):
-        with open(file_location) as state_file:
-            chat_state = yaml.safe_load(state_file)
-        return cls(**chat_state)
-
-    def to_file(self, file_location: str):
-        with open(file_location, "w") as state_file:
-            yaml.safe_dump(self.model_dump(), state_file)
 
 
 @dataclass
@@ -48,33 +23,48 @@ class Command:
 class ChatWindow:
     def __init__(
         self,
-        language_model: LanguageModel | None,
-        chat_state: ChatState | None = None,
+        language_model: LanguageModel,
         on_chat_message: Callable | None = None,
         on_canceled: Callable | None = None,
+        persistence_location: str = "",
     ) -> None:
-        if chat_state is None:
-            chat_state = ChatState()
-        self.chat_state = chat_state
-
         # Implement command pattern here and inject commands via init
         # This allows for better extensibility and modularity
         self.commands = [
             Command("[x] exit", lambda: os._exit(0)),
             Command("+ new message", self._new_message_menu),
         ]
-        self.language_model = language_model
+        self.chat_session = ChatSession(
+            language_model, on_message=self._on_chat_message
+        )
+        self.persistence_location = persistence_location
+
         self._rofi = Rofi()
         self._pool = ThreadPoolExecutor()
-        self._on_chat_message = on_chat_message
-        self._on_canceled = on_canceled
+
+        self.on_chat_message = on_chat_message
+        self.on_canceled = on_canceled
+
+    def load_state(self):
+        self.chat_session.load_state(self.persistence_location)
+
+    def save_state(self):
+        if not self.persistence_location:
+            print("Error, set persistence location before saving")
+        self.chat_session.save_state(self.persistence_location)
 
     def show(self):
         self._main_menu()
 
+    def _on_chat_message(self, chat_message_future: Future[ChatMessage]):
+        chat_message = chat_message_future.result()
+        self.on_chat_message(chat_message)
+        if self.persistence_location:
+            self.chat_session.save_state(self.persistence_location)
+
     @property
     def options(self):
-        options = self.chat_state.chat_history + self.commands
+        options = self.chat_session.messages + self.commands
         options.reverse()
         return options
 
@@ -84,36 +74,23 @@ class ChatWindow:
         return options
 
     def _new_message_menu(self):
-        message = ""
-        chat_history = self.chat_state.chat_history
+        last_message = ""
+        chat_history = self.chat_session.messages
+
         if chat_history:
-            message = str(chat_history[-1])
-        reponse = self._rofi.text_entry("👷 | you", message)
-        if reponse is None:
+            last_message = str(chat_history[-1])
+
+        user_message = self._rofi.text_entry("👷 | you", last_message)
+        if user_message is None:
             self._on_canceled()
             return
-
-        chat_message = ChatMessage(sender="👷 | you", content=reponse)
-        chat_history.append(chat_message)
-
-        message_future = self._pool.submit(
-            self.language_model.awnser, chat_message.content
-        )
-
-        message_future.add_done_callback(self._log_chat_awnser)
-        if self._on_chat_message is not None:
-            message_future.add_done_callback(self._on_chat_message)
-
-    def _log_chat_awnser(self, message_future: Future):
-        message: str = message_future.result()
-        chat_message_awnser = ChatMessage(sender="😸 | cat", content=message)
-        self.chat_state.chat_history.append(chat_message_awnser)
+        self.chat_session.send_message(user_message)
 
     def _main_menu(self):
         index, key = self._rofi.select("Option", self.options_names)
 
         if key == -1 or index == -1:
-            self._on_canceled()
+            self.on_canceled()
             return
         if index < len(self.commands):
             command = self.options[index]
@@ -121,4 +98,4 @@ class ChatWindow:
         else:
             selected_message = self.options[index]
             pyperclip.copy(selected_message.content)
-            self._on_canceled()
+            self.on_canceled()

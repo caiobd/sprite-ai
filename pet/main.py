@@ -1,22 +1,25 @@
 # from __future__ import annotations
 
 from concurrent.futures import Future
+from importlib import resources
 import os
 import threading as th
 
 from plyer import notification
 from plyer.utils import platform
+import platformdirs
 
 from pet.core.pet import Pet
 from pet.core.pet_behaviour import PetBehaviour
 from pet.core.world import World
 from pet.default_animations import ANIMATIONS
 from pet.default_states import POSSIBLE_STATES
-from pet.gui.chat import ChatState, ChatWindow
+from pet.gui.chat import ChatWindow
+from pet.language.chat_state import ChatState
 from pet.gui.pet_window import PetGui
 from pet.language.language_model import LanguageModel
 from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
-from importlib import resources
+
 
 STATE_FILE = "chat_state.yml"
 MODEL_FILE = "model.pickle"
@@ -42,22 +45,13 @@ def load_language_model() -> LanguageModel:
         "user: Qual sua comida favorita?\n"
         "assistant: Miau! Amo peixe!\n"
     )
-    try:
-        language_model = LanguageModel.from_file(MODEL_FILE)
-    except FileNotFoundError as e:
-        language_model = LanguageModel(
-            model_location,
-            system_prompt=system_prompt,
-        )
+
+    language_model = LanguageModel(
+        model_location,
+        system_prompt=system_prompt,
+    )
+
     return language_model
-
-
-def load_chat_state() -> ChatState:
-    try:
-        chat_state = ChatState.from_file(STATE_FILE)
-    except FileNotFoundError as e:
-        chat_state = ChatState()
-    return chat_state
 
 
 def on_pet_clicked(world: World, chat_window: ChatWindow):
@@ -66,8 +60,7 @@ def on_pet_clicked(world: World, chat_window: ChatWindow):
     t.start()
 
 
-def on_notification(world: World, event_future: Future):
-    message: str = event_future.result()
+def on_notification(world: World, message: str):
     title = APP_NAME
 
     notification.notify(
@@ -84,7 +77,16 @@ def on_canceled(world: World):
 
 
 def main():
+    user_data_dir = platformdirs.user_data_path(
+        appname=APP_NAME,
+        appauthor=None,
+        version=None,
+        roaming=False,
+        ensure_exists=True,
+    )
+    persistence_location = str(user_data_dir / "state")
     sprite_sheet_location = str(resources.path("pet.resources.sprites", "fred.png"))
+    icon_location = str(resources.path("pet.resources.icons", "carboardbox_open.png"))
     print(sprite_sheet_location)
     pet_behaviour = PetBehaviour(
         possible_states=POSSIBLE_STATES, first_state="appearing"
@@ -93,18 +95,23 @@ def main():
     world = World((3840, 2160))
 
     language_model = load_language_model()
-    chat_state = load_chat_state()
 
     chat_window = ChatWindow(
         language_model,
-        chat_state,
         on_chat_message=lambda event_future: on_notification(world, event_future),
         on_canceled=lambda: on_canceled(world),
+        persistence_location=persistence_location,
     )
+    try:
+        chat_window.load_state()
+    except FileNotFoundError as e:
+        print(f"Failed to load state, {e}")
+
     pet_gui = PetGui(
         sprite_sheet_metadata,
         ANIMATIONS,
         on_clicked=lambda event: on_pet_clicked(world, chat_window),
+        icon_location=icon_location,
     )
 
     pet = Pet(pet_gui=pet_gui, pet_behaviour=pet_behaviour, world=world)

@@ -75,12 +75,11 @@ class LanguageModel:
     def messages(self):
         return self.llm_chain.memory.chat_memory.messages
 
-    @classmethod
-    def from_file(cls, file_location: str):
-        with open(file_location, "rb") as state_file:
-            chat_state = pickle.load(state_file)
-        return chat_state
+    def load_memory(self, memory_file_location: str):
+        with open(memory_file_location, "rb") as memory_file:
+            memory = pickle.load(memory_file)
+        self.llm_chain.memory = memory
 
-    def to_file(self, file_location: str):
-        with open(file_location, "wb") as state_file:
-            pickle.dump(self, state_file)
+    def save_memory(self, memory_file_location: str):
+        with open(memory_file_location, "wb") as memory_file:
+            pickle.dump(self.llm_chain.memory, memory_file)

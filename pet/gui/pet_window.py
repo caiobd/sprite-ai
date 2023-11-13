@@ -5,7 +5,7 @@ from typing import Any, Callable
 import numpy as np
 from pydantic import BaseModel
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QIcon
 
 from pet.movement import Movement
 from pet.movement.coordinate import Coordinate
@@ -22,8 +22,11 @@ class PetGui:
         animations: dict[str, Animation],
         on_position_updated: Callable | None = None,
         on_clicked: Callable | None = None,
+        icon_location: str = "",
     ):
         self._app = QtWidgets.QApplication(sys.argv)
+        if icon_location:
+            self._app.setWindowIcon(QIcon(icon_location))
         screen_size = self._app.primaryScreen().size()
         self.screen_size = (screen_size.width(), screen_size.height())
         self.sprite_widget = SpriteWidgetQt()
