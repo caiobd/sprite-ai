@@ -8,4 +8,5 @@ ANIMATIONS = {
     "sliding": Animation(19, 21, 0.2),
     "thinking": Animation(14, 17, 0.2),
     "appearing": Animation(26, 29, 1),
+    "playing": Animation(29, 33, 0.2),
 }
