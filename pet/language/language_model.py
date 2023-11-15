@@ -2,35 +2,24 @@ from __future__ import annotations
 
 import pickle
 from dataclasses import dataclass
+from pydantic import BaseModel
 
-import yaml
 from langchain.chains import LLMChain
 from langchain.llms import LlamaCpp
-from langchain.memory import ConversationSummaryBufferMemory
 from langchain.prompts import PromptTemplate
+from pet.language.default_model_configs import DOLPHIN_MINISTRAL_7B
 
 
 @dataclass
 class LanguageModel:
-    model_name: str
-    system_prompt: str = ""
-    model_temperature: float = 0.7
-    context_size: int = 4096
     llm_chain: LLMChain | None = None
+    model_config = DOLPHIN_MINISTRAL_7B
 
     def _build_prompt_template(self) -> PromptTemplate:
-        prompt_template = (
-            "<|im_start|>system\n"
-            "{system_prompt}<|im_end|>\n"
-            "Chat History:\n"
-            "{chat_history}\n"
-            "<|im_start|>user\n"
-            "{user_input}<|im_end|>\n"
-            "<|im_start|>assistant\n"
-        )
+        prompt_template = self.model_config.prompt_template
 
         prompt_template = prompt_template.format(
-            system_prompt=self.system_prompt,
+            system_prompt=self.model_config.system_prompt,
             chat_history="{chat_history}",
             user_input="{user_input}",
         )
@@ -43,18 +32,20 @@ class LanguageModel:
 
     def __post_init__(self) -> None:
         llm = LlamaCpp(
-            model_path=self.model_name,
-            n_ctx=self.context_size,
+            model_path=self.model_config.model_name,
+            n_ctx=self.model_config.context_size,
             # n_gpu_layers=40,
-            temperature=self.model_temperature,
+            temperature=self.model_config.model_temperature,
             echo=False,
-            stop=["<|im_end|>"],
+            stop=self.model_config.stop_strings,
         )  # type: ignore
-        memory = ConversationSummaryBufferMemory(
+        Memory = self.model_config.memory_type.value
+        memory = Memory(
             llm=llm,
             memory_key="chat_history",
-            human_prefix="user",
-            ai_prefix="assistant",
+            human_prefix=self.model_config.user_prefix,
+            ai_prefix=self.model_config.ai_prefix,
+            max_token_limit=self.model_config.memory_tokens_limit,
         )
         prompt_template = self._build_prompt_template()
         llm_chain = LLMChain(
@@ -70,6 +61,7 @@ class LanguageModel:
             awnser = self.llm_chain.predict(user_input=prompt)
         else:
             raise RuntimeError("Failed to load llm model")
+
         return awnser
 
     def messages(self):

@@ -1,6 +1,5 @@
-# from __future__ import annotations
+from __future__ import annotations
 
-from concurrent.futures import Future
 from importlib import resources
 import os
 import threading as th
@@ -15,43 +14,14 @@ from pet.core.world import World
 from pet.default_animations import ANIMATIONS
 from pet.default_states import POSSIBLE_STATES
 from pet.gui.chat import ChatWindow
-from pet.language.chat_state import ChatState
 from pet.gui.pet_window import PetGui
 from pet.language.language_model import LanguageModel
 from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 
 
-STATE_FILE = "chat_state.yml"
-MODEL_FILE = "model.pickle"
 APP_NAME = "Pet"
 ICON_EXTENTION = icon_extension = "ico" if platform == "win" else "png"
 ICON_FILE = str(resources.path("pet.resources.icons", f"icon.{ICON_EXTENTION}"))
-
-
-def load_language_model() -> LanguageModel:
-    model_location = str(
-        resources.path(
-            "pet.resources.model_weights", "dolphin-2.2.1-mistral-7b.Q4_K_S.gguf"
-        )
-    )
-
-    system_prompt = (
-        "Você é um gato assistente que gosta do humano porque é dele que vem sua comida, ajude o humano com o que ele precisar."
-        "Você nasceu espontaneamente de uma pilha de arquivos desorganizados."
-        "Você fala como trejeitos de gato.\n"
-        "Exemplos:\n"
-        "user: Você sabe quem sou eu?\n"
-        "assistant: Você é meaw dono!\n"
-        "user: Qual sua comida favorita?\n"
-        "assistant: Miau! Amo peixe!\n"
-    )
-
-    language_model = LanguageModel(
-        model_location,
-        system_prompt=system_prompt,
-    )
-
-    return language_model
 
 
 def on_pet_clicked(world: World, chat_window: ChatWindow):
@@ -94,7 +64,8 @@ def main():
     sprite_sheet_metadata = SpriteSheetMetadata(sprite_sheet_location, 5888, 128, 46, 1)
     world = World((3840, 2160))
 
-    language_model = load_language_model()
+    language_model = LanguageModel()
+
 
     chat_window = ChatWindow(
         language_model,
@@ -123,9 +94,6 @@ def main():
     except KeyboardInterrupt as e:
         print("exiting...")
         os._exit(0)
-    finally:
-        print("saving model...")
-        chat_window.language_model.to_file(MODEL_FILE)
 
 
 if __name__ == "__main__":
