@@ -12,7 +12,8 @@ class MemoryType(Enum):
 
 
 class LanguageModelConfig(BaseModel):
-    model_name: str
+    url: str
+    name: str
     prompt_template: str = (
         "<|im_start|>system\n"
         "{system_prompt}<|im_end|>\n"

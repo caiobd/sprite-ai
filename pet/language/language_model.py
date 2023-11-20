@@ -1,19 +1,27 @@
 from __future__ import annotations
 
+from __future__ import annotations
+from importlib import resources
+from pathlib import Path
+
 import pickle
 from dataclasses import dataclass
+import platformdirs
 from pydantic import BaseModel
 
 from langchain.chains import LLMChain
 from langchain.llms import LlamaCpp
 from langchain.prompts import PromptTemplate
-from pet.language.default_model_configs import DOLPHIN_MINISTRAL_7B
+from pet.constants import APP_NAME
+from pet.language.language_model_config import LanguageModelConfig
+from pet.utils.download import download_file
+
 
 
 @dataclass
 class LanguageModel:
+    model_config: LanguageModelConfig
     llm_chain: LLMChain | None = None
-    model_config = DOLPHIN_MINISTRAL_7B
 
     def _build_prompt_template(self) -> PromptTemplate:
         prompt_template = self.model_config.prompt_template
@@ -31,14 +39,18 @@ class LanguageModel:
         return prompt
 
     def __post_init__(self) -> None:
+        if not Path(self.model_location).exists():
+            self._download_model()
+
         llm = LlamaCpp(
-            model_path=self.model_config.model_name,
+            model_path=self.model_location,
             n_ctx=self.model_config.context_size,
             # n_gpu_layers=40,
             temperature=self.model_config.model_temperature,
             echo=False,
             stop=self.model_config.stop_strings,
         )  # type: ignore
+
         Memory = self.model_config.memory_type.value
         memory = Memory(
             llm=llm,
@@ -55,6 +67,8 @@ class LanguageModel:
             verbose=False,
         )
         self.llm_chain = llm_chain
+
+        
 
     def awnser(self, prompt: str):
         if self.llm_chain:
@@ -75,3 +89,22 @@ class LanguageModel:
     def save_memory(self, memory_file_location: str):
         with open(memory_file_location, "wb") as memory_file:
             pickle.dump(self.llm_chain.memory, memory_file)
+    
+    @property
+    def model_location(self):
+        user_data_location = platformdirs.user_data_path(
+            appname=APP_NAME,
+            appauthor=None,
+            version=None,
+            roaming=False,
+            ensure_exists=True,
+        )
+        user_models_location = user_data_location / 'models'
+        user_models_location.mkdir(exist_ok=True)
+        
+        model_location = user_models_location / self.model_config.name
+        model_location = str(model_location)
+        return model_location
+    
+    def _download_model(self):
+        download_file(self.model_config.url, self.model_location)

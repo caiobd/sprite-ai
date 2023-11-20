@@ -17,6 +17,7 @@ from pet.gui.chat import ChatWindow
 from pet.gui.pet_window import PetGui
 from pet.language.language_model import LanguageModel
 from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
+from pet.language.default_model_configs import DOLPHIN_MINISTRAL_7B
 
 
 APP_NAME = "Pet"
@@ -64,7 +65,7 @@ def main():
     sprite_sheet_metadata = SpriteSheetMetadata(sprite_sheet_location, 5888, 128, 46, 1)
     world = World((3840, 2160))
 
-    language_model = LanguageModel()
+    language_model = LanguageModel(DOLPHIN_MINISTRAL_7B)
 
 
     chat_window = ChatWindow(
