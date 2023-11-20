@@ -34,10 +34,9 @@ def download_file(file_link, filename):
     try:
         if not os.path.isfile(filename):
             temp_file = tempfile.NamedTemporaryFile()
-            print(temp_file.name)
             title='Downloading language model'
             urllib.request.urlretrieve(file_link, temp_file.name, reporthook=ProgressBar(title=title))
-            shutil.move(temp_file.name, filename)
+            shutil.copy(temp_file.name, filename)
             print("File downloaded successfully.")
         else:
             print("File already exists.")
