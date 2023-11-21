@@ -2,6 +2,8 @@ from collections import defaultdict
 from threading import Lock
 from typing import Any, Callable, DefaultDict
 
+from loguru import logger
+
 Callback = Callable[[Any], None]
 
 
@@ -17,7 +19,7 @@ class EventManager:
             message (Any): A object to be passed as message
             topic (str): A topic to publish the object to
         """
-        print(f"[{topic}] {message}")
+        logger.debug(f"[{topic}] {message}")
         with self.lock:
             topic_callbacks = self.inscriptions[topic]
 

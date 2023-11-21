@@ -1,6 +1,7 @@
 from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from typing import Callable
+
 from pet.language.chat_message import ChatMessage
 from pet.language.chat_state import ChatState
 from pet.language.language_model import LanguageModel

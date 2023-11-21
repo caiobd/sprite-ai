@@ -5,7 +5,7 @@ from typing import Any, Callable
 import numpy as np
 from pydantic import BaseModel
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 
 from pet.movement import Movement
 from pet.movement.coordinate import Coordinate

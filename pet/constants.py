@@ -1,7 +1,8 @@
 from __future__ import annotations
-from plyer.utils import platform
+
 from importlib import resources
 
+from plyer.utils import platform
 
 APP_NAME = "Pet"
 ICON_EXTENTION = icon_extension = "ico" if platform == "win" else "png"

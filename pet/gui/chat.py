@@ -1,13 +1,14 @@
-from concurrent.futures import Future, ThreadPoolExecutor
 import os
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Callable
 
 import pyperclip
+from loguru import logger
 from rofi import Rofi
+
 from pet.language.chat_message import ChatMessage
 from pet.language.chat_session import ChatSession
-
 from pet.language.language_model import LanguageModel
 
 
@@ -50,7 +51,7 @@ class ChatWindow:
 
     def save_state(self):
         if not self.persistence_location:
-            print("Error, set persistence location before saving")
+            logger.error("Error, set persistence location before saving")
         self.chat_session.save_state(self.persistence_location)
 
     def show(self):

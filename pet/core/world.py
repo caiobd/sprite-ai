@@ -4,6 +4,8 @@ import threading
 from time import time
 from typing import Any
 
+from loguru import logger
+
 from pet.event_manager import EventManager
 
 # from pet.core.pet import Pet
@@ -34,4 +36,4 @@ class World:
     def update_state_event(self, clock_time: int, pet: Pet):
         if clock_time % 5 == 0:
             pet.next_state()
-            print(f"<new state> {pet.get_state()}")
+            logger.debug(f"<new state> {pet.get_state()}")

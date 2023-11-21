@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from __future__ import annotations
+import pickle
+from dataclasses import dataclass
 from importlib import resources
 from pathlib import Path
 
-import pickle
-from dataclasses import dataclass
 import platformdirs
-from pydantic import BaseModel
-
 from langchain.chains import LLMChain
 from langchain.llms import LlamaCpp
 from langchain.prompts import PromptTemplate
+from llama_cpp import suppress_stdout_stderr
+from loguru import logger
+from pydantic import BaseModel
+
 from pet.constants import APP_NAME
 from pet.language.language_model_config import LanguageModelConfig
 from pet.utils.download import download_file
-
 
 
 @dataclass
@@ -31,7 +31,7 @@ class LanguageModel:
             chat_history="{chat_history}",
             user_input="{user_input}",
         )
-        print(prompt_template)
+        logger.debug(prompt_template)
 
         prompt = PromptTemplate(
             input_variables=["chat_history", "user_input"], template=prompt_template
@@ -42,14 +42,15 @@ class LanguageModel:
         if not Path(self.model_location).exists():
             self._download_model()
 
-        llm = LlamaCpp(
-            model_path=self.model_location,
-            n_ctx=self.model_config.context_size,
-            # n_gpu_layers=40,
-            temperature=self.model_config.model_temperature,
-            echo=False,
-            stop=self.model_config.stop_strings,
-        )  # type: ignore
+        with suppress_stdout_stderr():
+            llm = LlamaCpp(
+                model_path=self.model_location,
+                n_ctx=self.model_config.context_size,
+                # n_gpu_layers=40,
+                temperature=self.model_config.model_temperature,
+                echo=False,
+                stop=self.model_config.stop_strings,
+            )  # type: ignore
 
         Memory = self.model_config.memory_type.value
         memory = Memory(
@@ -67,8 +68,6 @@ class LanguageModel:
             verbose=False,
         )
         self.llm_chain = llm_chain
-
-        
 
     def awnser(self, prompt: str):
         if self.llm_chain:
@@ -89,7 +88,7 @@ class LanguageModel:
     def save_memory(self, memory_file_location: str):
         with open(memory_file_location, "wb") as memory_file:
             pickle.dump(self.llm_chain.memory, memory_file)
-    
+
     @property
     def model_location(self):
         user_data_location = platformdirs.user_data_path(
@@ -99,12 +98,12 @@ class LanguageModel:
             roaming=False,
             ensure_exists=True,
         )
-        user_models_location = user_data_location / 'models'
+        user_models_location = user_data_location / "models"
         user_models_location.mkdir(exist_ok=True)
-        
+
         model_location = user_models_location / self.model_config.name
         model_location = str(model_location)
         return model_location
-    
+
     def _download_model(self):
         download_file(self.model_config.url, self.model_location)
