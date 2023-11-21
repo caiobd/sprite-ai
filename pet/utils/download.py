@@ -1,9 +1,12 @@
 import os
-from pathlib import Path
 import shutil
-import urllib.request
-import progressbar
 import tempfile
+import urllib.request
+from pathlib import Path
+
+import progressbar
+from loguru import logger
+
 
 class ProgressBar:
     def __init__(self, title: str = ""):
@@ -34,11 +37,13 @@ def download_file(file_link, filename):
     try:
         if not os.path.isfile(filename):
             temp_file = tempfile.NamedTemporaryFile()
-            title='Downloading language model'
-            urllib.request.urlretrieve(file_link, temp_file.name, reporthook=ProgressBar(title=title))
+            title = "Downloading language model"
+            urllib.request.urlretrieve(
+                file_link, temp_file.name, reporthook=ProgressBar(title=title)
+            )
             shutil.copy(temp_file.name, filename)
-            print("File downloaded successfully.")
+            logger.info("Model file downloaded successfully.")
         else:
-            print("File already exists.")
+            logger.info("Model file already exists.")
     finally:
         temp_file.close()
