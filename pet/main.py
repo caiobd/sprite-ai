@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from importlib import resources
+import ctypes
 import os
+import sys
 import threading as th
+from importlib import resources
 
+import platformdirs
+from llama_cpp import llama_log_set, suppress_stdout_stderr
+from loguru import logger
 from plyer import notification
 from plyer.utils import platform
-import platformdirs
 
 from pet.core.pet import Pet
 from pet.core.pet_behaviour import PetBehaviour
@@ -15,14 +19,20 @@ from pet.default_animations import ANIMATIONS
 from pet.default_states import POSSIBLE_STATES
 from pet.gui.chat import ChatWindow
 from pet.gui.pet_window import PetGui
+from pet.language.default_model_configs import DOLPHIN_MINISTRAL_7B
 from pet.language.language_model import LanguageModel
 from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
-from pet.language.default_model_configs import DOLPHIN_MINISTRAL_7B
-
 
 APP_NAME = "Pet"
 ICON_EXTENTION = icon_extension = "ico" if platform == "win" else "png"
 ICON_FILE = str(resources.path("pet.resources.icons", f"icon.{ICON_EXTENTION}"))
+LOG_DIR = platformdirs.user_log_path(
+    appname=APP_NAME,
+    appauthor=None,
+    version=None,
+    ensure_exists=True,
+)
+LOG_FILE = LOG_DIR / "events.log"
 
 
 def on_pet_clicked(world: World, chat_window: ChatWindow):
@@ -48,6 +58,10 @@ def on_canceled(world: World):
 
 
 def main():
+    logger.remove()
+    logger.add(sys.stdout, level="INFO")
+    logger.add(LOG_FILE, level="DEBUG")
+
     user_data_dir = platformdirs.user_data_path(
         appname=APP_NAME,
         appauthor=None,
@@ -58,15 +72,14 @@ def main():
     persistence_location = str(user_data_dir / "state")
     sprite_sheet_location = str(resources.path("pet.resources.sprites", "fred.png"))
     icon_location = str(resources.path("pet.resources.icons", "carboardbox_open.png"))
-    print(sprite_sheet_location)
+
     pet_behaviour = PetBehaviour(
         possible_states=POSSIBLE_STATES, first_state="appearing"
     )
     sprite_sheet_metadata = SpriteSheetMetadata(sprite_sheet_location, 5888, 128, 46, 1)
     world = World((3840, 2160))
 
-    language_model = LanguageModel(DOLPHIN_MINISTRAL_7B)
-
+    language_model = LanguageModel(DOLPHIN_MINISTRAL_7B_Q3)
 
     chat_window = ChatWindow(
         language_model,
@@ -75,9 +88,10 @@ def main():
         persistence_location=persistence_location,
     )
     try:
-        chat_window.load_state()
+        with suppress_stdout_stderr():
+            chat_window.load_state()
     except FileNotFoundError as e:
-        print(f"Failed to load state, {e}")
+        logger.error(f"Failed to load state, {e}")
 
     pet_gui = PetGui(
         sprite_sheet_metadata,
@@ -93,7 +107,7 @@ def main():
     try:
         pet.run()
     except KeyboardInterrupt as e:
-        print("exiting...")
+        logger.info("exiting...")
         os._exit(0)
 
 
