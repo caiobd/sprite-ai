@@ -34,7 +34,6 @@ def test_subscribe_multiple_callbacks(event_manager):
     event_manager.subscribe(topic, callback1)
     event_manager.subscribe(topic, callback2)
     subscribers = event_manager.subscribers(topic)
-    print(subscribers)
 
     assert subscribers == [callback1, callback2]
 
