@@ -7,7 +7,6 @@ import threading as th
 from importlib import resources
 
 import platformdirs
-from llama_cpp import llama_log_set, suppress_stdout_stderr
 from loguru import logger
 from plyer import notification
 from plyer.utils import platform
@@ -79,7 +78,7 @@ def main():
     sprite_sheet_metadata = SpriteSheetMetadata(sprite_sheet_location, 5888, 128, 46, 1)
     world = World((3840, 2160))
 
-    language_model = LanguageModel(DOLPHIN_MINISTRAL_7B_Q3)
+    language_model = LanguageModel(DOLPHIN_MINISTRAL_7B)
 
     chat_window = ChatWindow(
         language_model,
@@ -88,8 +87,7 @@ def main():
         persistence_location=persistence_location,
     )
     try:
-        with suppress_stdout_stderr():
-            chat_window.load_state()
+        chat_window.load_state()
     except FileNotFoundError as e:
         logger.error(f"Failed to load state, {e}")
 

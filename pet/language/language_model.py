@@ -82,7 +82,8 @@ class LanguageModel:
 
     def load_memory(self, memory_file_location: str):
         with open(memory_file_location, "rb") as memory_file:
-            memory = pickle.load(memory_file)
+            with suppress_stdout_stderr():
+                memory = pickle.load(memory_file)
         self.llm_chain.memory = memory
 
     def save_memory(self, memory_file_location: str):
