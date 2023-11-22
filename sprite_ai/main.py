@@ -22,9 +22,9 @@ from sprite_ai.language.default_model_configs import DOLPHIN_MINISTRAL_7B
 from sprite_ai.language.language_model import LanguageModel
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 
-APP_NAME = "Pet"
+APP_NAME = "sprite-ai"
 ICON_EXTENTION = icon_extension = "ico" if platform == "win" else "png"
-ICON_FILE = str(resources.path("pet.resources.icons", f"icon.{ICON_EXTENTION}"))
+ICON_FILE = str(resources.path("sprite_ai.resources.icons", f"icon.{ICON_EXTENTION}"))
 LOG_DIR = platformdirs.user_log_path(
     appname=APP_NAME,
     appauthor=None,
@@ -69,8 +69,8 @@ def main():
         ensure_exists=True,
     )
     persistence_location = str(user_data_dir / "state")
-    sprite_sheet_location = str(resources.path("pet.resources.sprites", "fred.png"))
-    icon_location = str(resources.path("pet.resources.icons", "carboardbox_open.png"))
+    sprite_sheet_location = str(resources.path("sprite_ai.resources.sprites", "fred.png"))
+    icon_location = str(resources.path("sprite_ai.resources.icons", "carboardbox_open.png"))
 
     pet_behaviour = PetBehaviour(
         possible_states=POSSIBLE_STATES, first_state="appearing"
