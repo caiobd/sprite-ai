@@ -1,4 +1,4 @@
-from pet import __version__
+from sprite_ai import __version__
 
 
 def test_version():

@@ -2,7 +2,7 @@ from typing import Any
 
 from pytest import fixture
 
-from pet.event_manager import EventManager
+from sprite_ai.event_manager import EventManager
 
 
 @fixture
