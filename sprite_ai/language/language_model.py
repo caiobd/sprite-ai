@@ -13,9 +13,9 @@ from llama_cpp import suppress_stdout_stderr
 from loguru import logger
 from pydantic import BaseModel
 
-from pet.constants import APP_NAME
-from pet.language.language_model_config import LanguageModelConfig
-from pet.utils.download import download_file
+from sprite_ai.constants import APP_NAME
+from sprite_ai.language.language_model_config import LanguageModelConfig
+from sprite_ai.utils.download import download_file
 
 
 @dataclass

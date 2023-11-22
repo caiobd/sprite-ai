@@ -6,7 +6,7 @@ from typing import Any
 
 from loguru import logger
 
-from pet.event_manager import EventManager
+from sprite_ai.event_manager import EventManager
 
 # from pet.core.pet import Pet
 

@@ -1,6 +1,6 @@
-from pet.movement.coordinate import Coordinate
-from pet.movement.idle_movement import IdleMovement
-from pet.movement.walking_movement import WalkingMovement
+from sprite_ai.movement.coordinate import Coordinate
+from sprite_ai.movement.idle_movement import IdleMovement
+from sprite_ai.movement.walking_movement import WalkingMovement
 
 
 class MovementFactory:

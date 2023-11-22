@@ -7,12 +7,12 @@ from pydantic import BaseModel
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon, QPixmap
 
-from pet.movement import Movement
-from pet.movement.coordinate import Coordinate
-from pet.movement.linear_movement import LinearMovement
-from pet.sprite_sheet.animation import Animation, AnimationController
-from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
-from pet.sprite_widget import SpriteWidgetQt
+from sprite_ai.movement import Movement
+from sprite_ai.movement.coordinate import Coordinate
+from sprite_ai.movement.linear_movement import LinearMovement
+from sprite_ai.sprite_sheet.animation import Animation, AnimationController
+from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
+from sprite_ai.sprite_widget import SpriteWidgetQt
 
 
 class PetGui:

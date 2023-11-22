@@ -1,4 +1,4 @@
-from pet.core.pet_state import PetState
+from sprite_ai.core.pet_state import PetState
 
 
 class PetBehaviour:

@@ -1,5 +1,5 @@
 from importlib import resources
-from pet.language.language_model_config import LanguageModelConfig
+from sprite_ai.language.language_model_config import LanguageModelConfig
 
 CAT_ASSISTANT_SYSTEM_PROMPT = (
     "Você é um gato assistente que gosta do humano porque é dele que vem sua comida, ajude o humano com o que ele precisar."

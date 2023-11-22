@@ -7,9 +7,9 @@ import pyperclip
 from loguru import logger
 from rofi import Rofi
 
-from pet.language.chat_message import ChatMessage
-from pet.language.chat_session import ChatSession
-from pet.language.language_model import LanguageModel
+from sprite_ai.language.chat_message import ChatMessage
+from sprite_ai.language.chat_session import ChatSession
+from sprite_ai.language.language_model import LanguageModel
 
 
 @dataclass

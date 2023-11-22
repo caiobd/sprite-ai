@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pet.core.pet_state import PetState
+from sprite_ai.core.pet_state import PetState
 
 POSSIBLE_STATES = {
     "appearing": PetState(

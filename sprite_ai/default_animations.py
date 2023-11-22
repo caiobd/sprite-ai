@@ -1,4 +1,4 @@
-from pet.sprite_sheet.animation import Animation
+from sprite_ai.sprite_sheet.animation import Animation
 
 ANIMATIONS = {
     "idle": Animation(0, 0, 0.2),

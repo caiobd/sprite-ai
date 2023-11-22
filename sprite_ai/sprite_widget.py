@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 
 from PyQt5 import QtCore, QtWidgets
 
-from pet.movement.coordinate import Coordinate
-from pet.movement.typing_utils import Numeric
+from sprite_ai.movement.coordinate import Coordinate
+from sprite_ai.movement.typing_utils import Numeric
 
 
 class SpriteWidget(ABC):

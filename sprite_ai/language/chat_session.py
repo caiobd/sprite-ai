@@ -2,9 +2,9 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from typing import Callable
 
-from pet.language.chat_message import ChatMessage
-from pet.language.chat_state import ChatState
-from pet.language.language_model import LanguageModel
+from sprite_ai.language.chat_message import ChatMessage
+from sprite_ai.language.chat_state import ChatState
+from sprite_ai.language.language_model import LanguageModel
 
 
 class ChatSession:

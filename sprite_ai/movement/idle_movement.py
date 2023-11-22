@@ -1,5 +1,5 @@
-from pet.movement.coordinate import Coordinate
-from pet.movement.linear_movement import LinearMovement
+from sprite_ai.movement.coordinate import Coordinate
+from sprite_ai.movement.linear_movement import LinearMovement
 
 
 class IdleMovement(LinearMovement):

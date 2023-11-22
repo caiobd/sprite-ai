@@ -11,16 +11,16 @@ from loguru import logger
 from plyer import notification
 from plyer.utils import platform
 
-from pet.core.pet import Pet
-from pet.core.pet_behaviour import PetBehaviour
-from pet.core.world import World
-from pet.default_animations import ANIMATIONS
-from pet.default_states import POSSIBLE_STATES
-from pet.gui.chat import ChatWindow
-from pet.gui.pet_window import PetGui
-from pet.language.default_model_configs import DOLPHIN_MINISTRAL_7B
-from pet.language.language_model import LanguageModel
-from pet.sprite_sheet.sprite_sheet import SpriteSheetMetadata
+from sprite_ai.core.pet import Pet
+from sprite_ai.core.pet_behaviour import PetBehaviour
+from sprite_ai.core.world import World
+from sprite_ai.default_animations import ANIMATIONS
+from sprite_ai.default_states import POSSIBLE_STATES
+from sprite_ai.gui.chat import ChatWindow
+from sprite_ai.gui.pet_window import PetGui
+from sprite_ai.language.default_model_configs import DOLPHIN_MINISTRAL_7B
+from sprite_ai.language.language_model import LanguageModel
+from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 
 APP_NAME = "Pet"
 ICON_EXTENTION = icon_extension = "ico" if platform == "win" else "png"

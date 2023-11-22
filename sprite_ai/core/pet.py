@@ -1,8 +1,8 @@
-from pet.core.pet_behaviour import PetBehaviour
-from pet.core.world import World
-from pet.gui.pet_window import PetGui
-from pet.movement.coordinate import Coordinate
-from pet.movement.movement_factory import MovementFactory
+from sprite_ai.core.pet_behaviour import PetBehaviour
+from sprite_ai.core.world import World
+from sprite_ai.gui.pet_window import PetGui
+from sprite_ai.movement.coordinate import Coordinate
+from sprite_ai.movement.movement_factory import MovementFactory
 
 
 class Pet:
