@@ -2,7 +2,7 @@
 
 
 ## Description
-Sprite AI is an AI companion for your desktop, through LLM technology a sprite can generate text, dialog and even computer code,
+Sprite AI is an AI companion for your desktop, through LLM technology a sprite can generate text, dialog and even computer code
 
 
 ## Minimum requirements
@@ -40,7 +40,7 @@ Storage     |   6GB
 In a terminal type the following command
 > sprite-ai
 
-### Interacting with the sprite
+### Interacting with a sprite
 You can interact with a sprite by clicking on it, this will open the interaction menu
 
 ### Interaction menu
