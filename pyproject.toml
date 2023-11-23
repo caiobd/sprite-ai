@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "sprite_ai"
-version = "1.0.0"
-description = ""
+name = "sprite-ai"
+version = "1.0.1"
+description = "Sprite AI is an AI companion for your desktop"
 authors = ["Caio D <caiobd@protonmail.com>"]
 
 [tool.poetry.dependencies]
