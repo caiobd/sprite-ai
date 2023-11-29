@@ -13,6 +13,9 @@ from plyer import notification
 from plyer.utils import platform
 import typer
 import yaml
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QIcon
+
 from sprite_ai.core.pet import Pet
 from sprite_ai.core.pet_behaviour import PetBehaviour
 from sprite_ai.core.world import World
@@ -25,6 +28,8 @@ from sprite_ai.language.default_model_configs import DOLPHIN_MINISTRAL_7B
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
+from sprite_ai.ui.chat_window import ChatWindow as NewChatWindow
+
 
 APP_NAME = "sprite-ai"
 ICON_EXTENTION = icon_extension = "ico" if platform == "win" else "png"
@@ -61,7 +66,7 @@ def on_canceled(world: World):
 
 def setup_logging():
     logger.remove()
-    logger.add(sys.stdout, level="INFO")
+    logger.add(sys.stdout, level="DEBUG")
     logger.add(LOG_FILE, level="DEBUG")
 
 def main():
@@ -95,18 +100,30 @@ def main():
     # model_config = default_model_configs.DOLPHIN_MINISTRAL_7B
     language_model = LanguageModelFactory().build(model_config)
 
+    app = QApplication(sys.argv)
+
     chat_window = ChatWindow(
         language_model,
         on_chat_message=lambda event_future: on_notification(world, event_future),
         on_canceled=lambda: on_canceled(world),
         persistence_location=persistence_location,
     )
+
     try:
         chat_window.load_state()
     except FileNotFoundError as e:
         logger.error(f"Failed to load state, {e}")
 
+
+    if icon_location:
+        app.setWindowIcon(QIcon(icon_location))
+    screen_size = app.primaryScreen().size()
+    screen_size = (screen_size.width(), screen_size.height())
+
+
+
     pet_gui = PetGui(
+        screen_size,
         sprite_sheet_metadata,
         ANIMATIONS,
         on_clicked=lambda event: on_pet_clicked(world, chat_window),
@@ -118,6 +135,8 @@ def main():
     world.event_manager.subscribe("notification", on_notification)
     try:
         pet.run()
+        app.exec()
+        pet.shudown()
     except KeyboardInterrupt as e:
         logger.info("exiting...")
         os._exit(0)

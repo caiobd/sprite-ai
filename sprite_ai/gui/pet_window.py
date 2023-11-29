@@ -18,17 +18,14 @@ from sprite_ai.sprite_widget import SpriteWidgetQt
 class PetGui:
     def __init__(
         self,
+        screen_size: tuple[int,int],
         sprite_sheet_metadata: SpriteSheetMetadata,
         animations: dict[str, Animation],
         on_position_updated: Callable | None = None,
         on_clicked: Callable | None = None,
         icon_location: str = "",
     ):
-        self._app = QtWidgets.QApplication(sys.argv)
-        if icon_location:
-            self._app.setWindowIcon(QIcon(icon_location))
-        screen_size = self._app.primaryScreen().size()
-        self.screen_size = (screen_size.width(), screen_size.height())
+        self.screen_size = screen_size
         self.sprite_widget = SpriteWidgetQt()
         sprite_sheet_image = QPixmap(sprite_sheet_metadata.path)
         self.animation_controller = AnimationController(
@@ -78,7 +75,6 @@ class PetGui:
         self._update_image_loop()
         self._update_position_loop()
         self.animation_controller.play()
-        self._app.exec()
 
     def set_movement(self, movement: LinearMovement):
         self.animation_controller.set_orientation(movement.orientation)
@@ -92,10 +88,11 @@ class PetGui:
             self.animation_controller.set_orientation(orientation)
 
     def run(self):
-        try:
-            self.gui_loop()
-        finally:
-            self._image_update_timer.cancel()
-            self._image_update_timer.join()
-            self._position_update_timer.cancel()
-            self._position_update_timer.join()
+        self.gui_loop()
+            
+    
+    def shutdown(self):
+        self._image_update_timer.cancel()
+        self._image_update_timer.join()
+        self._position_update_timer.cancel()
+        self._position_update_timer.join()

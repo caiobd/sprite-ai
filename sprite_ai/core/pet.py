@@ -65,3 +65,6 @@ class Pet:
 
     def run(self):
         self.pet_gui.run()
+    
+    def shutdown(self):
+        self.pet_gui.shutdown()
