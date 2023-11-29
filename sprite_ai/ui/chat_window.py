@@ -30,6 +30,7 @@ class ChatWindow(QtWidgets.QWidget):
             'timestamp': time(),
             'content': user_message,
         })
+        self.ui.te_chatinput.clear()
 
     def send_ai_message(self, message: dict):
         timestamp = message['timestamp']
