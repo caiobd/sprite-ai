@@ -32,6 +32,7 @@ class ProgressBar:
 
 
 def download_file(file_link, filename):
+    temp_file = None
 
     # Checks if the file already exists before downloading
     try:
@@ -46,4 +47,5 @@ def download_file(file_link, filename):
         else:
             logger.info("Model file already exists.")
     finally:
-        temp_file.close()
+        if temp_file is not None:
+            temp_file.close()
