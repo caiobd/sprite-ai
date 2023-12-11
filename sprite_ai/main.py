@@ -18,8 +18,12 @@ from sprite_ai.default_animations import ANIMATIONS
 from sprite_ai.default_states import POSSIBLE_STATES
 from sprite_ai.gui.chat import ChatWindow
 from sprite_ai.gui.pet_window import PetGui
+from sprite_ai.language import default_model_configs
 from sprite_ai.language.default_model_configs import DOLPHIN_MINISTRAL_7B
-from sprite_ai.language.language_model import LanguageModel
+from sprite_ai.language.languaga_model_factory import LanguageModelFactory
+from sprite_ai.language.language_model_config import LanguageModelConfig
+from sprite_ai.language.local_language_model import LocalLanguageModel
+from sprite_ai.language.remote_language_model import RemoteLanguageModel
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 
 APP_NAME = "sprite-ai"
@@ -78,7 +82,10 @@ def main():
     sprite_sheet_metadata = SpriteSheetMetadata(sprite_sheet_location, 5888, 128, 46, 1)
     world = World((3840, 2160))
 
-    language_model = LanguageModel(DOLPHIN_MINISTRAL_7B)
+    model_config = default_model_configs.DOLPHIN_MINISTRAL_7B
+    language_model = LanguageModelFactory().build(model_config)
+
+    app = QApplication(sys.argv)
 
     chat_window = ChatWindow(
         language_model,
@@ -101,7 +108,6 @@ def main():
     pet = Pet(pet_gui=pet_gui, pet_behaviour=pet_behaviour, world=world)
 
     world.event_manager.subscribe("notification", on_notification)
-
     try:
         pet.run()
     except KeyboardInterrupt as e:
