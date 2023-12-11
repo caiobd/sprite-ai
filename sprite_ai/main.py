@@ -22,8 +22,6 @@ from sprite_ai.language import default_model_configs
 from sprite_ai.language.default_model_configs import DOLPHIN_MINISTRAL_7B
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
-from sprite_ai.language.local_language_model import LocalLanguageModel
-from sprite_ai.language.remote_language_model import RemoteLanguageModel
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 
 APP_NAME = "sprite-ai"
