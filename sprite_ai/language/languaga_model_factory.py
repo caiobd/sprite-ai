@@ -10,6 +10,7 @@ from langchain.llms.llamacpp import LlamaCpp
 from langchain.llms.base import LLM
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationSummaryBufferMemory, ConversationSummaryMemory
 
 from sprite_ai.utils.download import download_file
 
@@ -58,8 +59,14 @@ class LanguageModelFactory:
         )
         return prompt
     
-    def _build_memory(self, model_config: LanguageModelConfig, llm: LLM):
-        Memory = model_config.memory_type.value
+    def _build_memory(self, model_config: LanguageModelConfig, llm: LLM):        
+        if model_config.memory_type == 'summary':
+            Memory = ConversationSummaryMemory
+        elif model_config.memory_type == 'summary_buffer':
+            Memory = ConversationSummaryBufferMemory
+        else:
+            raise ValueError(f'Unsuported memory type: {model_config.memory_type}')
+
         memory = Memory(
             llm=llm,
             memory_key="chat_history",

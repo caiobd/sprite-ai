@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Literal
 
-from langchain.memory import ConversationSummaryBufferMemory, ConversationSummaryMemory
+
 from pydantic import BaseModel
 
 
-class MemoryType(Enum):
-    SUMMARY_BUFFER = ConversationSummaryBufferMemory
-    SUMMARY = ConversationSummaryMemory
+
 
 
 class LanguageModelConfig(BaseModel):
@@ -39,4 +38,4 @@ class LanguageModelConfig(BaseModel):
     ai_prefix: str = "assistant"
     stop_strings: list[str] = ["<|im_end|>"]
     memory_tokens_limit: int = 2048
-    memory_type: MemoryType = MemoryType.SUMMARY_BUFFER
+    memory_type: Literal['summary', 'summary_buffer'] = 'summary_buffer'
