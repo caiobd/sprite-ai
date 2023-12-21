@@ -11,8 +11,8 @@ from pydantic import BaseModel
 
 
 class LanguageModelConfig(BaseModel):
-    url: str
     name: str
+    url: str=''
     prompt_template: str = (
         "<|im_start|>system\n"
         "{system_prompt}<|im_end|>\n"
@@ -39,3 +39,4 @@ class LanguageModelConfig(BaseModel):
     stop_strings: list[str] = ["<|im_end|>"]
     memory_tokens_limit: int = 2048
     memory_type: Literal['summary', 'summary_buffer'] = 'summary_buffer'
+    api_key: str = ''
