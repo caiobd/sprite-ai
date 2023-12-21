@@ -26,12 +26,13 @@ class LanguageModelFactory:
         user_models_location = user_data_location / "models"
         user_models_location.mkdir(exist_ok=True)
 
-        model_location = user_models_location / model_name
+        model_location = user_models_location / f'{model_name}.gguf'
         model_location = str(model_location)
         return model_location
     
     def _build_local_llm(self, model_config: LanguageModelConfig, model_name: str) -> LLM:
         model_location = self._get_model_location(model_name)
+        print(model_location)
         if not os.path.isfile(model_location):
             download_file(model_config.url, model_location)
         with suppress_stdout_stderr():
