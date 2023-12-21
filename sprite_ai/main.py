@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ctypes
 import os
+import shutil
 import sys
 import threading as th
 from importlib import resources
@@ -10,7 +11,8 @@ import platformdirs
 from loguru import logger
 from plyer import notification
 from plyer.utils import platform
-
+import typer
+import yaml
 from sprite_ai.core.pet import Pet
 from sprite_ai.core.pet_behaviour import PetBehaviour
 from sprite_ai.core.world import World
@@ -18,8 +20,10 @@ from sprite_ai.default_animations import ANIMATIONS
 from sprite_ai.default_states import POSSIBLE_STATES
 from sprite_ai.gui.chat import ChatWindow
 from sprite_ai.gui.pet_window import PetGui
+from sprite_ai.language import default_model_configs
 from sprite_ai.language.default_model_configs import DOLPHIN_MINISTRAL_7B
-from sprite_ai.language.language_model import LanguageModel
+from sprite_ai.language.languaga_model_factory import LanguageModelFactory
+from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 
 APP_NAME = "sprite-ai"
@@ -55,12 +59,12 @@ def on_notification(world: World, message: str):
 def on_canceled(world: World):
     world.event_manager.publish("state", "walking")
 
-
-def main():
+def setup_logging():
     logger.remove()
     logger.add(sys.stdout, level="INFO")
     logger.add(LOG_FILE, level="DEBUG")
 
+def main():
     user_data_dir = platformdirs.user_data_path(
         appname=APP_NAME,
         appauthor=None,
@@ -78,7 +82,18 @@ def main():
     sprite_sheet_metadata = SpriteSheetMetadata(sprite_sheet_location, 5888, 128, 46, 1)
     world = World((3840, 2160))
 
-    language_model = LanguageModel(DOLPHIN_MINISTRAL_7B)
+    config_location = user_data_dir / 'config.yaml'
+
+    if not config_location.is_file():
+        default_config_location = resources.path("sprite_ai.resources", "default_config.yaml")
+        shutil.copy2(default_config_location, config_location)
+    
+    with config_location.open(encoding='UTF-8') as config_file:
+        model_config_dump = yaml.safe_load(config_file)
+        model_config = LanguageModelConfig(**model_config_dump)
+
+    # model_config = default_model_configs.DOLPHIN_MINISTRAL_7B
+    language_model = LanguageModelFactory().build(model_config)
 
     chat_window = ChatWindow(
         language_model,
@@ -101,7 +116,6 @@ def main():
     pet = Pet(pet_gui=pet_gui, pet_behaviour=pet_behaviour, world=world)
 
     world.event_manager.subscribe("notification", on_notification)
-
     try:
         pet.run()
     except KeyboardInterrupt as e:
@@ -110,4 +124,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)
