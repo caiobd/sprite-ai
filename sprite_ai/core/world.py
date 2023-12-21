@@ -15,7 +15,7 @@ class World:
     def __init__(self, world_size) -> None:
         self.world_size = world_size
         self.entities: dict[str, Any] = {}
-        self.event_manager = EventManager()
+        self.event_manager = EventManager(skip_topic_log={'world_clock'})
         self.world_clock_timer = None
         self.last_target = None
         self.world_clock_loop()
