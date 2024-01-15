@@ -29,6 +29,7 @@ from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from sprite_ai.ui.chat_window import ChatWindow as NewChatWindow
+from sprite_ai.controller.chat_window_controller import ChatWindowController
 
 
 APP_NAME = "sprite-ai"
@@ -102,15 +103,21 @@ def main():
 
     app = QApplication(sys.argv)
 
-    chat_window = ChatWindow(
+    # chat_window = ChatWindow(
+    #     language_model,
+    #     on_chat_message=lambda event_future: on_notification(world, event_future),
+    #     on_canceled=lambda: on_canceled(world),
+    #     persistence_location=persistence_location,
+    # )
+
+    chat_window = NewChatWindow(world.event_manager)
+    chat_window_controller = ChatWindowController(
+        world.event_manager,
         language_model,
-        on_chat_message=lambda event_future: on_notification(world, event_future),
-        on_canceled=lambda: on_canceled(world),
-        persistence_location=persistence_location,
-    )
+     )
 
     try:
-        chat_window.load_state()
+        chat_window_controller.load_state(persistence_location)
     except FileNotFoundError as e:
         logger.error(f"Failed to load state, {e}")
 
