@@ -1,9 +1,9 @@
-from sprite_ai.core.pet_state import PetState
+from sprite_ai.core.sprite_state import SpriteState
 
 
-class PetBehaviour:
+class SpriteBehaviour:
     def __init__(
-        self, possible_states: dict[str, PetState], first_state: str
+        self, possible_states: dict[str, SpriteState], first_state: str
     ) -> None:
         self.possible_states = possible_states
         self.current_state = possible_states[first_state]
@@ -16,5 +16,5 @@ class PetBehaviour:
         state = self.possible_states[state_name]
         self.current_state = state
 
-    def get_state(self) -> PetState:
+    def get_state(self) -> SpriteState:
         return self.current_state

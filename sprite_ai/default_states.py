@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from sprite_ai.core.pet_state import PetState
+from sprite_ai.core.sprite_state import SpriteState
 
 POSSIBLE_STATES = {
-    'appearing': PetState(
+    'appearing': SpriteState(
         name='idle',
         animation='appearing',
         movement='idle',
@@ -11,7 +11,7 @@ POSSIBLE_STATES = {
             'walking': 1,
         },
     ),
-    'thinking': PetState(
+    'thinking': SpriteState(
         name='thinking',
         animation='thinking',
         movement='idle',
@@ -19,7 +19,7 @@ POSSIBLE_STATES = {
             'thinking': 1,
         },
     ),
-    'idle': PetState(
+    'idle': SpriteState(
         name='idle',
         animation='idle',
         movement='idle',
@@ -34,7 +34,7 @@ POSSIBLE_STATES = {
             'laying_down': 2 / 15,
         },
     ),
-    'walking': PetState(
+    'walking': SpriteState(
         name='walking',
         animation='walking',
         movement='walking',
@@ -49,7 +49,7 @@ POSSIBLE_STATES = {
             'laying_down': 2 / 15,
         },
     ),
-    'jumping_idle': PetState(
+    'jumping_idle': SpriteState(
         name='jumping_idle',
         animation='walking',
         movement='walking',
@@ -64,7 +64,7 @@ POSSIBLE_STATES = {
             'laying_down': 2 / 15,
         },
     ),
-    'jumping_walking': PetState(
+    'jumping_walking': SpriteState(
         name='jumping_walking',
         animation='jumping',
         movement='walking',
@@ -79,7 +79,7 @@ POSSIBLE_STATES = {
             'laying_down': 2 / 15,
         },
     ),
-    'sliding': PetState(
+    'sliding': SpriteState(
         name='sliding',
         animation='sliding',
         movement='walking',
@@ -94,7 +94,7 @@ POSSIBLE_STATES = {
             'laying_down': 2 / 15,
         },
     ),
-    'playing': PetState(
+    'playing': SpriteState(
         name='playing',
         animation='playing',
         movement='idle',
@@ -109,7 +109,7 @@ POSSIBLE_STATES = {
             'laying_down': 2 / 15,
         },
     ),
-    'walking_upright': PetState(
+    'walking_upright': SpriteState(
         name='walking_upright',
         animation='walking_upright',
         movement='walking',
@@ -124,7 +124,7 @@ POSSIBLE_STATES = {
             'laying_down': 2 / 15,
         },
     ),
-    'laying_down': PetState(
+    'laying_down': SpriteState(
         name='laying_down',
         animation='laying_down',
         movement='idle',

@@ -7,8 +7,7 @@ from typing import Any
 from loguru import logger
 
 from sprite_ai.event_manager import EventManager
-
-# from pet.core.pet import Pet
+from sprite_ai.core.sprite import Sprite
 
 
 class World:
@@ -33,7 +32,7 @@ class World:
         current_time = round(time())
         self.event_manager.publish('world_clock', current_time)
 
-    def update_state_event(self, clock_time: int, pet: Pet):
+    def update_state_event(self, clock_time: int, sprite: Sprite):
         if clock_time % 5 == 0:
-            pet.next_state()
-            logger.debug(f'<new state> {pet.get_state()}')
+            sprite.next_state()
+            logger.debug(f'<new state> {sprite.get_state()}')

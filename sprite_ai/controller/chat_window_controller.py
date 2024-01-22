@@ -48,7 +48,7 @@ class ChatWindowController:
         timestamp = message['timestamp']
 
         self.chat_session.send_message(content, self._publish_awnser)
-        self.event_manager.publish('state', 'thinking')
+        self.event_manager.publish('ui.sprite.state', 'thinking')
 
     def _publish_awnser(self, awnser_future: Future[str]):
         try:
@@ -57,7 +57,7 @@ class ChatWindowController:
             logger.error('Failed to aquire language model awnser', e)
             return
         finally:
-            self.event_manager.publish('state', 'jumping_idle')
+            self.event_manager.publish('ui.sprite.state', 'jumping_idle')
 
         message = {
             'sender': 'ai',

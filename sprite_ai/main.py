@@ -16,8 +16,8 @@ import yaml
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
-from sprite_ai.core.pet import Pet
-from sprite_ai.core.pet_behaviour import PetBehaviour
+from sprite_ai.core.sprite import Sprite
+from sprite_ai.core.sprite_behaviour import SpriteBehaviour
 from sprite_ai.core.world import World
 from sprite_ai.default_animations import ANIMATIONS
 from sprite_ai.default_states import POSSIBLE_STATES
@@ -46,7 +46,7 @@ LOG_DIR = platformdirs.user_log_path(
 LOG_FILE = LOG_DIR / 'events.log'
 
 
-def on_pet_clicked(world: World, chat_window: ChatWindow):
+def on_sprite_clicked(world: World, chat_window: ChatWindow):
     t = th.Thread(target=chat_window.show)
     t.start()
 
@@ -60,11 +60,11 @@ def on_notification(world: World, message: str):
         app_name=APP_NAME,
         app_icon=ICON_FILE,
     )
-    world.event_manager.publish('state', 'jumping_idle')
+    world.event_manager.publish('ui.sprite.state', 'jumping_idle')
 
 
 def on_canceled(world: World):
-    world.event_manager.publish('state', 'walking')
+    world.event_manager.publish('ui.sprite.state', 'walking')
 
 
 def setup_logging():
@@ -89,7 +89,7 @@ def main():
         resources.path('sprite_ai.resources.icons', 'carboardbox_open.png')
     )
 
-    pet_behaviour = PetBehaviour(
+    sprite_behaviour = SpriteBehaviour(
         possible_states=POSSIBLE_STATES, first_state='appearing'
     )
     sprite_sheet_metadata = SpriteSheetMetadata(
@@ -140,17 +140,17 @@ def main():
         screen_size,
         sprite_sheet_metadata,
         ANIMATIONS,
-        on_clicked=lambda event: on_pet_clicked(world, chat_window),
+        on_clicked=lambda event: on_sprite_clicked(world, chat_window),
         icon_location=icon_location,
     )
 
-    pet = Pet(sprite_gui=sprite_gui, pet_behaviour=pet_behaviour, world=world)
+    sprite = Sprite(sprite_gui=sprite_gui, sprite_behaviour=sprite_behaviour, world=world)
 
     world.event_manager.subscribe('notification', on_notification)
     try:
-        pet.run()
+        sprite.run()
         app.exec()
-        pet.shudown()
+        sprite.shudown()
     except KeyboardInterrupt as e:
         logger.info('exiting...')
         os._exit(0)

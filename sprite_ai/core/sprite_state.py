@@ -3,7 +3,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 
-class PetState(BaseModel):
+class SpriteState(BaseModel):
     name: str
     animation: str
     movement: str
