@@ -14,7 +14,7 @@ class World:
     def __init__(self, world_size) -> None:
         self.world_size = world_size
         self.entities: dict[str, Any] = {}
-        self.event_manager = EventManager(skip_topic_log={'world_clock'})
+        self.event_manager = EventManager(skip_topic_log={'world.clock'})
         self.world_clock_timer = None
         self.last_target = None
         self.world_clock_loop()
@@ -30,7 +30,7 @@ class World:
         self.world_clock_timer.start()
 
         current_time = round(time())
-        self.event_manager.publish('world_clock', current_time)
+        self.event_manager.publish('world,clock', current_time)
 
     def update_state_event(self, clock_time: int, sprite: Sprite):
         if clock_time % 5 == 0:

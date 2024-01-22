@@ -22,7 +22,7 @@ class Sprite:
         )
         self.world.event_manager.subscribe('ui.sprite.movement', self.on_movement_event)
         self.world.event_manager.subscribe('ui.sprite.state', self.set_state)
-        self.world.event_manager.subscribe('world_clock', self.on_clocktick)
+        self.world.event_manager.subscribe('world.clock', self.on_clocktick)
         self.animation = None
         self._update_state()
 
