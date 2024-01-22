@@ -15,7 +15,7 @@ from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from sprite_ai.sprite_widget import SpriteWidgetQt
 
 
-class PetGui:
+class SpriteGui:
     def __init__(
         self,
         screen_size: tuple[int, int],

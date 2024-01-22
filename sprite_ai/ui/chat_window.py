@@ -28,7 +28,7 @@ class ChatWindow(QtWidgets.QWidget):
         self.ui.te_chatinput.installEventFilter(self)
         self.message_recived.connect(self.add_message)
         self.event_manager.subscribe(
-            'ui.add_message', self.message_recived.emit
+            'ui.chat_window.add_message', self.message_recived.emit
         )
 
     def eventFilter(self, obj, event: QEvent):
@@ -51,7 +51,7 @@ class ChatWindow(QtWidgets.QWidget):
             'content': user_message,
         }
         self.add_message(message)
-        self.event_manager.publish('ui.process_user_message', message)
+        self.event_manager.publish('ui.chat_window.process_user_message', message)
         self.ui.te_chatinput.clear()
 
     @pyqtSlot(dict)

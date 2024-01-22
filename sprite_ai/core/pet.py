@@ -1,26 +1,26 @@
 from sprite_ai.core.pet_behaviour import PetBehaviour
 from sprite_ai.core.world import World
-from sprite_ai.gui.pet_window import PetGui
+from sprite_ai.gui.sprite_gui import SpriteGui
 from sprite_ai.movement.coordinate import Coordinate
 from sprite_ai.movement.movement_factory import MovementFactory
 
 
 class Pet:
     def __init__(
-        self, pet_gui: PetGui, pet_behaviour: PetBehaviour, world: World
+        self, sprite_gui: SpriteGui, pet_behaviour: PetBehaviour, world: World
     ) -> None:
-        self.pet_gui = pet_gui
+        self.sprite_gui = sprite_gui
         self.pet_behaviour = pet_behaviour
         self.world = world
         width, height = world.world_size
         self.current_position = Coordinate(width // 2, height)
         self.movement_factory = MovementFactory(world.world_size)
-        self.pet_gui.on_position_updated = self.on_position_update
+        self.sprite_gui.on_position_updated = self.on_position_update
 
         self.world.event_manager.subscribe(
-            'animation', self.on_animation_event
+            'ui.pet.animation', self.on_animation_event
         )
-        self.world.event_manager.subscribe('movement', self.on_movement_event)
+        self.world.event_manager.subscribe('ui.pet.movement', self.on_movement_event)
         self.world.event_manager.subscribe('state', self.set_state)
         self.world.event_manager.subscribe('world_clock', self.on_clocktick)
         self.animation = None
@@ -30,8 +30,8 @@ class Pet:
         state = self.pet_behaviour.get_state()
         animation_name = state.animation
         movement_name = state.movement
-        self.world.event_manager.publish('animation', animation_name)
-        self.world.event_manager.publish('movement', movement_name)
+        self.world.event_manager.publish('ui.pet.animation', animation_name)
+        self.world.event_manager.publish('ui.pet.movement', movement_name)
 
     def next_state(self):
         self.pet_behaviour.next_state()
@@ -51,7 +51,7 @@ class Pet:
 
     def on_animation_event(self, animation: str):
         self.animation = animation
-        self.pet_gui.set_animation(animation)
+        self.sprite_gui.set_animation(animation)
 
     def on_movement_event(self, movement_name: str):
         movement = self.movement_factory.build(
@@ -59,16 +59,16 @@ class Pet:
         )
 
         if self.animation is not None:
-            self.pet_gui.set_animation(self.animation)
+            self.sprite_gui.set_animation(self.animation)
 
-        self.pet_gui.set_movement(movement)
+        self.sprite_gui.set_movement(movement)
 
     def on_clocktick(self, tick: int) -> str:
         if tick % 5 == 0:
             self.next_state()
 
     def run(self):
-        self.pet_gui.run()
+        self.sprite_gui.run()
 
     def shutdown(self):
-        self.pet_gui.shutdown()
+        self.sprite_gui.shutdown()

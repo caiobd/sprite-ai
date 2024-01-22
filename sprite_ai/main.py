@@ -22,7 +22,7 @@ from sprite_ai.core.world import World
 from sprite_ai.default_animations import ANIMATIONS
 from sprite_ai.default_states import POSSIBLE_STATES
 from sprite_ai.gui.chat import ChatWindow
-from sprite_ai.gui.pet_window import PetGui
+from sprite_ai.gui.sprite_gui import SpriteGui
 from sprite_ai.language import default_model_configs
 from sprite_ai.language.default_model_configs import DOLPHIN_MINISTRAL_7B
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
@@ -48,7 +48,6 @@ LOG_FILE = LOG_DIR / 'events.log'
 
 def on_pet_clicked(world: World, chat_window: ChatWindow):
     t = th.Thread(target=chat_window.show)
-    world.event_manager.publish('state', 'thinking')
     t.start()
 
 
@@ -137,7 +136,7 @@ def main():
     screen_size = app.primaryScreen().size()
     screen_size = (screen_size.width(), screen_size.height())
 
-    pet_gui = PetGui(
+    sprite_gui = SpriteGui(
         screen_size,
         sprite_sheet_metadata,
         ANIMATIONS,
@@ -145,7 +144,7 @@ def main():
         icon_location=icon_location,
     )
 
-    pet = Pet(pet_gui=pet_gui, pet_behaviour=pet_behaviour, world=world)
+    pet = Pet(sprite_gui=sprite_gui, pet_behaviour=pet_behaviour, world=world)
 
     world.event_manager.subscribe('notification', on_notification)
     try:

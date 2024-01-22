@@ -22,7 +22,7 @@ class ChatWindowController:
         self.chat_session = ChatSession(language_model)
         self._pool = ThreadPoolExecutor()
         self.event_manager.subscribe(
-            'ui.process_user_message', self.process_user_message
+            'ui.chat_window.process_user_message', self.process_user_message
         )
 
     def load_state(self):
@@ -30,7 +30,7 @@ class ChatWindowController:
             self.chat_session.load_state(self.persistence_location)
             for chat_message in self.chat_session.messages:
                 self.event_manager.publish(
-                    'ui.add_message', chat_message.model_dump()
+                    'ui.chat_window.add_message', chat_message.model_dump()
                 )
 
             logger.info('loaded previous state')
@@ -64,5 +64,5 @@ class ChatWindowController:
             'timestamp': time(),
             'content': awnser,
         }
-        self.event_manager.publish('ui.add_message', message)
+        self.event_manager.publish('ui.chat_window.add_message', message)
         self.save_state()
