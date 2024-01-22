@@ -30,6 +30,8 @@ class ChatWindow(QtWidgets.QWidget):
         self.event_manager.subscribe(
             'ui.chat_window.add_message', self.message_recived.emit
         )
+        self.show()
+        self.hide()
 
     def eventFilter(self, obj, event: QEvent):
         modifiers = QtWidgets.QApplication.keyboardModifiers()
@@ -69,3 +71,4 @@ class ChatWindow(QtWidgets.QWidget):
         timestamp = message['timestamp']
         content = message['content']
         self.model.add_message(sender_id, content)
+        self.ui.lv_chat_history.scrollToBottom()

@@ -7,7 +7,7 @@ from typing import Any
 from loguru import logger
 
 from sprite_ai.event_manager import EventManager
-from sprite_ai.core.sprite import Sprite
+# from sprite_ai.core.sprite import Sprite
 
 
 class World:
@@ -30,7 +30,7 @@ class World:
         self.world_clock_timer.start()
 
         current_time = round(time())
-        self.event_manager.publish('world,clock', current_time)
+        self.event_manager.publish('world.clock', current_time)
 
     def update_state_event(self, clock_time: int, sprite: Sprite):
         if clock_time % 5 == 0:
