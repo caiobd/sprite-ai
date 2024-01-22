@@ -2,6 +2,7 @@ from concurrent.futures import CancelledError, Future, ThreadPoolExecutor
 from time import time
 
 from loguru import logger
+from sprite_ai import default_states
 from sprite_ai.event_manager import EventManager
 from sprite_ai.language.chat_message import ChatMessage
 from sprite_ai.language.chat_session import ChatSession
@@ -35,7 +36,9 @@ class ChatWindowController:
     def process_user_message(self, message: dict):
         content = message['content']
         timestamp = message['timestamp']
+        
         self.chat_session.send_message(content, self._publish_awnser)
+        self.event_manager.publish('state', 'thinking')
 
     def _publish_awnser(self, awnser_future: Future[str]):
         try:
@@ -43,6 +46,8 @@ class ChatWindowController:
         except CancelledError | TimeoutError as e:
             logger.error('Failed to aquire language model awnser', e)
             return
+        finally:
+            self.event_manager.publish('state', 'jumping_idle')
         
         message = {
             'sender': 'ai',
