@@ -114,10 +114,11 @@ def main():
     chat_window_controller = ChatWindowController(
         world.event_manager,
         language_model,
-     )
+        persistence_location
+    )
 
     try:
-        chat_window_controller.load_state(persistence_location)
+        chat_window_controller.load_state()
     except FileNotFoundError as e:
         logger.error(f"Failed to load state, {e}")
 
