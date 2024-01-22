@@ -2,7 +2,6 @@ from concurrent.futures import CancelledError, Future, ThreadPoolExecutor
 from time import time
 
 from loguru import logger
-from sprite_ai import default_states
 from sprite_ai.event_manager import EventManager
 from sprite_ai.language.chat_message import ChatMessage
 from sprite_ai.language.chat_session import ChatSession
@@ -17,7 +16,7 @@ class ChatWindowController:
         
         self.chat_session = ChatSession(language_model)
         self._pool = ThreadPoolExecutor()
-        self.event_manager.subscribe('process_user_message', self.process_user_message)
+        self.event_manager.subscribe('ui.process_user_message', self.process_user_message)
 
     def load_state(self):
         try:
@@ -36,7 +35,7 @@ class ChatWindowController:
     def process_user_message(self, message: dict):
         content = message['content']
         timestamp = message['timestamp']
-        
+
         self.chat_session.send_message(content, self._publish_awnser)
         self.event_manager.publish('state', 'thinking')
 

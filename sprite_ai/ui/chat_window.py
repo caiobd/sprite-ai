@@ -44,7 +44,7 @@ class ChatWindow(QtWidgets.QWidget):
             'content': user_message,
         }
         self.add_message(message)
-        self.event_manager.publish('process_user_message', message)
+        self.event_manager.publish('ui.process_user_message', message)
         self.ui.te_chatinput.clear()
 
     
