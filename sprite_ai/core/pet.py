@@ -17,10 +17,12 @@ class Pet:
         self.movement_factory = MovementFactory(world.world_size)
         self.pet_gui.on_position_updated = self.on_position_update
 
-        self.world.event_manager.subscribe("animation", self.on_animation_event)
-        self.world.event_manager.subscribe("movement", self.on_movement_event)
-        self.world.event_manager.subscribe("state", self.set_state)
-        self.world.event_manager.subscribe("world_clock", self.on_clocktick)
+        self.world.event_manager.subscribe(
+            'animation', self.on_animation_event
+        )
+        self.world.event_manager.subscribe('movement', self.on_movement_event)
+        self.world.event_manager.subscribe('state', self.set_state)
+        self.world.event_manager.subscribe('world_clock', self.on_clocktick)
         self.animation = None
         self._update_state()
 
@@ -28,8 +30,8 @@ class Pet:
         state = self.pet_behaviour.get_state()
         animation_name = state.animation
         movement_name = state.movement
-        self.world.event_manager.publish("animation", animation_name)
-        self.world.event_manager.publish("movement", movement_name)
+        self.world.event_manager.publish('animation', animation_name)
+        self.world.event_manager.publish('movement', movement_name)
 
     def next_state(self):
         self.pet_behaviour.next_state()
@@ -43,8 +45,8 @@ class Pet:
         return self.pet_behaviour.get_state()
 
     def on_position_update(self, position_update: dict[str, Coordinate]):
-        old_position = position_update["old_position"]
-        new_position = position_update["new_position"]
+        old_position = position_update['old_position']
+        new_position = position_update['new_position']
         self.current_position = new_position
 
     def on_animation_event(self, animation: str):
@@ -52,7 +54,9 @@ class Pet:
         self.pet_gui.set_animation(animation)
 
     def on_movement_event(self, movement_name: str):
-        movement = self.movement_factory.build(movement_name, self.current_position)
+        movement = self.movement_factory.build(
+            movement_name, self.current_position
+        )
 
         if self.animation is not None:
             self.pet_gui.set_animation(self.animation)
@@ -65,6 +69,6 @@ class Pet:
 
     def run(self):
         self.pet_gui.run()
-    
+
     def shutdown(self):
         self.pet_gui.shutdown()

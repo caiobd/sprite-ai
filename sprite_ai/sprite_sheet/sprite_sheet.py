@@ -34,15 +34,17 @@ class SpriteSheetIterator:
     def __post_init__(self):
         if self.end_index is None:
             self.end_index = (
-                self.sprite_sheet_metadata.n_cols * self.sprite_sheet_metadata.n_rows
+                self.sprite_sheet_metadata.n_cols
+                * self.sprite_sheet_metadata.n_rows
             )
         self.frame_index = self.start_index
 
-        assert self.start_index <= self.end_index, "Invalid start index"
+        assert self.start_index <= self.end_index, 'Invalid start index'
         assert (
             self.end_index
-            <= self.sprite_sheet_metadata.n_columns * self.sprite_sheet_metadata.n_rows
-        ), "Invalid end index"
+            <= self.sprite_sheet_metadata.n_columns
+            * self.sprite_sheet_metadata.n_rows
+        ), 'Invalid end index'
 
     def _update_frame_index(self):
         if self.frame_index >= self.end_index - 1:

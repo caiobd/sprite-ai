@@ -8,4 +8,4 @@ class ChatMessage(BaseModel):
     timestamp: float = time.time()
 
     def __str__(self) -> str:
-        return f"{self.sender}: {self.content}"
+        return f'{self.sender}: {self.content}'

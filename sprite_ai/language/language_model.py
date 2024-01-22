@@ -16,7 +16,7 @@ class LanguageModel:
         if self.llm_chain:
             awnser = self.llm_chain.predict(user_input=prompt)
         else:
-            raise RuntimeError("Failed to load llm model")
+            raise RuntimeError('Failed to load llm model')
 
         return awnser
 
@@ -24,11 +24,11 @@ class LanguageModel:
         return self.llm_chain.memory.chat_memory.messages
 
     def load_memory(self, memory_file_location: str):
-        with open(memory_file_location, "rb") as memory_file:
+        with open(memory_file_location, 'rb') as memory_file:
             with suppress_stdout_stderr():
                 memory = pickle.load(memory_file)
         self.llm_chain.memory = memory
 
     def save_memory(self, memory_file_location: str):
-        with open(memory_file_location, "wb") as memory_file:
+        with open(memory_file_location, 'wb') as memory_file:
             pickle.dump(self.llm_chain.memory, memory_file)

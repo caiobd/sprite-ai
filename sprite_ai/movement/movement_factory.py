@@ -7,8 +7,8 @@ class MovementFactory:
     def __init__(self, world_size: tuple[int, int]) -> None:
         self.world_size = world_size
         self.movements = {
-            "walking": WalkingMovement,
-            "idle": IdleMovement,
+            'walking': WalkingMovement,
+            'idle': IdleMovement,
         }
 
     def build(self, movement_name, current_position: Coordinate):

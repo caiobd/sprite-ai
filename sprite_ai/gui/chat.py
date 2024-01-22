@@ -27,13 +27,13 @@ class ChatWindow:
         language_model: LanguageModel,
         on_chat_message: Callable | None = None,
         on_canceled: Callable | None = None,
-        persistence_location: str = "",
+        persistence_location: str = '',
     ) -> None:
         # Implement command pattern here and inject commands via init
         # This allows for better extensibility and modularity
         self.commands = [
-            Command("[x] exit", lambda: os._exit(0)),
-            Command("+ new message", self._new_message_menu),
+            Command('[x] exit', lambda: os._exit(0)),
+            Command('+ new message', self._new_message_menu),
         ]
         self.chat_session = ChatSession(
             language_model, on_message=self._on_chat_message
@@ -51,7 +51,7 @@ class ChatWindow:
 
     def save_state(self):
         if not self.persistence_location:
-            logger.error("Error, set persistence location before saving")
+            logger.error('Error, set persistence location before saving')
         self.chat_session.save_state(self.persistence_location)
 
     def show(self):
@@ -75,20 +75,20 @@ class ChatWindow:
         return options
 
     def _new_message_menu(self):
-        last_message = ""
+        last_message = ''
         chat_history = self.chat_session.messages
 
         if chat_history:
             last_message = str(chat_history[-1])
 
-        user_message = self._rofi.text_entry("👷 | you", last_message)
+        user_message = self._rofi.text_entry('👷 | you', last_message)
         if user_message is None:
             self.on_canceled()
             return
         self.chat_session.send_message(user_message)
 
     def _main_menu(self):
-        index, key = self._rofi.select("Option", self.options_names)
+        index, key = self._rofi.select('Option', self.options_names)
 
         if key == -1 or index == -1:
             self.on_canceled()

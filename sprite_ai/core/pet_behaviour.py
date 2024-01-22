@@ -2,7 +2,9 @@ from sprite_ai.core.pet_state import PetState
 
 
 class PetBehaviour:
-    def __init__(self, possible_states: dict[str, PetState], first_state: str) -> None:
+    def __init__(
+        self, possible_states: dict[str, PetState], first_state: str
+    ) -> None:
         self.possible_states = possible_states
         self.current_state = possible_states[first_state]
 

@@ -23,7 +23,7 @@ class ChatSession:
         self.ai_chat_id = ai_chat_id
         self._pool = ThreadPoolExecutor()
 
-    def send_message(self, message: str, callback: Callable|None=None):
+    def send_message(self, message: str, callback: Callable | None = None):
         chat_message = ChatMessage(sender=self.user_chat_id, content=message)
         self.chat_state.chat_history.append(chat_message)
 
@@ -37,7 +37,9 @@ class ChatSession:
 
     def _log_chat_awnser(self, message_future: Future[str]):
         message = message_future.result()
-        chat_message_awnser = ChatMessage(sender=self.ai_chat_id, content=message)
+        chat_message_awnser = ChatMessage(
+            sender=self.ai_chat_id, content=message
+        )
         self.chat_state.chat_history.append(chat_message_awnser)
 
     @property
@@ -48,8 +50,8 @@ class ChatSession:
         persistence_location: Path = Path(persistence_location)
 
         persistence_location.mkdir(parents=True, exist_ok=True)
-        chat_state_location = persistence_location / "state.yml"
-        language_model_memory_location = persistence_location / "state.mem"
+        chat_state_location = persistence_location / 'state.yml'
+        language_model_memory_location = persistence_location / 'state.mem'
 
         self.chat_state.to_file(chat_state_location)
         self.language_model.save_memory(language_model_memory_location)
@@ -57,8 +59,8 @@ class ChatSession:
     def load_state(self, persistence_location: str):
         persistence_location = Path(persistence_location)
 
-        chat_state_location = persistence_location / "state.yml"
-        language_model_memory_location = persistence_location / "state.mem"
+        chat_state_location = persistence_location / 'state.yml'
+        language_model_memory_location = persistence_location / 'state.mem'
 
         self.chat_state = ChatState.from_file(chat_state_location)
         self.language_model.load_memory(language_model_memory_location)

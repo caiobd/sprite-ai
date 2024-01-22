@@ -18,12 +18,12 @@ from sprite_ai.sprite_widget import SpriteWidgetQt
 class PetGui:
     def __init__(
         self,
-        screen_size: tuple[int,int],
+        screen_size: tuple[int, int],
         sprite_sheet_metadata: SpriteSheetMetadata,
         animations: dict[str, Animation],
         on_position_updated: Callable | None = None,
         on_clicked: Callable | None = None,
-        icon_location: str = "",
+        icon_location: str = '',
     ):
         self.screen_size = screen_size
         self.sprite_widget = SpriteWidgetQt()
@@ -63,8 +63,8 @@ class PetGui:
 
         if self.on_position_updated != None:
             position_update_message = {
-                "old_position": current_position,
-                "new_position": new_position,
+                'old_position': current_position,
+                'new_position': new_position,
             }
             self.on_position_updated(position_update_message)
 
@@ -89,8 +89,7 @@ class PetGui:
 
     def run(self):
         self.gui_loop()
-            
-    
+
     def shutdown(self):
         self._image_update_timer.cancel()
         self._image_update_timer.join()

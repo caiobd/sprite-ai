@@ -6,10 +6,11 @@ from PyQt5.QtWidgets import QApplication
 USER_ME = 0
 USER_THEM = 1
 
-BUBBLE_COLORS = {USER_ME: "#90caf9", USER_THEM: "#a5d6a7"}
+BUBBLE_COLORS = {USER_ME: '#90caf9', USER_THEM: '#a5d6a7'}
 
 BUBBLE_PADDING = QMargins(15, 5, 15, 5)
 TEXT_PADDING = QMargins(25, 15, 25, 15)
+
 
 class MessageDelegate(QStyledItemDelegate):
     """
@@ -40,7 +41,9 @@ class MessageDelegate(QStyledItemDelegate):
             p1 = bubblerect.topRight()
         else:
             p1 = bubblerect.topLeft()
-        painter.drawPolygon(p1 + QPoint(-20, 0), p1 + QPoint(20, 0), p1 + QPoint(0, 20))
+        painter.drawPolygon(
+            p1 + QPoint(-20, 0), p1 + QPoint(20, 0), p1 + QPoint(0, 20)
+        )
 
         # draw the text
         painter.setPen(Qt.black)

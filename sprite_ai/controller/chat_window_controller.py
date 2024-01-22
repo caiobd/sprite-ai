@@ -9,25 +9,36 @@ from sprite_ai.language.language_model import LanguageModel
 
 
 class ChatWindowController:
-    def __init__(self, event_manager: EventManager, language_model: LanguageModel, persistence_location:str) -> None:
+    def __init__(
+        self,
+        event_manager: EventManager,
+        language_model: LanguageModel,
+        persistence_location: str,
+    ) -> None:
         self.event_manager = event_manager
         self.language_model = language_model
         self.persistence_location = persistence_location
-        
+
         self.chat_session = ChatSession(language_model)
         self._pool = ThreadPoolExecutor()
-        self.event_manager.subscribe('ui.process_user_message', self.process_user_message)
+        self.event_manager.subscribe(
+            'ui.process_user_message', self.process_user_message
+        )
 
     def load_state(self):
         try:
             self.chat_session.load_state(self.persistence_location)
             for chat_message in self.chat_session.messages:
-                self.event_manager.publish('ui.add_message', chat_message.model_dump())
+                self.event_manager.publish(
+                    'ui.add_message', chat_message.model_dump()
+                )
 
             logger.info('loaded previous state')
         except FileNotFoundError as e:
-            logger.info('No previous state found at persistence location, skipped loading state')
-    
+            logger.info(
+                'No previous state found at persistence location, skipped loading state'
+            )
+
     def save_state(self):
         self.chat_session.save_state(self.persistence_location)
         logger.info('Saved curent state')
@@ -47,7 +58,7 @@ class ChatWindowController:
             return
         finally:
             self.event_manager.publish('state', 'jumping_idle')
-        
+
         message = {
             'sender': 'ai',
             'timestamp': time(),

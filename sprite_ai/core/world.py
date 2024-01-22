@@ -21,19 +21,19 @@ class World:
         self.world_clock_loop()
 
     def update_entity_position(self, entity_name, position_update_message):
-        new_position = position_update_message["new_position"]
-        old_position = position_update_message["old_position"]
+        new_position = position_update_message['new_position']
+        old_position = position_update_message['old_position']
 
-        self.entities[entity_name] = position_update_message["new_position"]
+        self.entities[entity_name] = position_update_message['new_position']
 
     def world_clock_loop(self):
         self.world_clock_timer = threading.Timer(1, self.world_clock_loop)
         self.world_clock_timer.start()
 
         current_time = round(time())
-        self.event_manager.publish("world_clock", current_time)
+        self.event_manager.publish('world_clock', current_time)
 
     def update_state_event(self, clock_time: int, pet: Pet):
         if clock_time % 5 == 0:
             pet.next_state()
-            logger.debug(f"<new state> {pet.get_state()}")
+            logger.debug(f'<new state> {pet.get_state()}')
