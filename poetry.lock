@@ -1236,16 +1236,6 @@ files = [
 ]
 
 [[package]]
-name = "pyperclip"
-version = "1.8.2"
-description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
-]
-
-[[package]]
 name = "pytest"
 version = "7.4.3"
 description = "pytest: simple powerful testing with Python"
@@ -1266,17 +1256,6 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
-
-[[package]]
-name = "python-rofi"
-version = "1.0.1"
-description = "Create simple GUIs using the Rofi application"
-optional = false
-python-versions = "*"
-files = [
-    {file = "python-rofi-1.0.1.tar.gz", hash = "sha256:f2d6b8c7a1fcd1807b19cf27329d9a7f6c839cc9e8877396a819337cfa797a61"},
-    {file = "python_rofi-1.0.1-py2.py3-none-any.whl", hash = "sha256:6acf69ce1480b81e929119acc85e6e1d62c975beb82d14c62152c9690f44f251"},
-]
 
 [[package]]
 name = "python-utils"
@@ -1735,4 +1714,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "b0f1eb375bdb9527fd037b8136ba259f4c8bbe1d838bcaf9f3f85bf3d675ab2e"
+content-hash = "7bb8228bf1cfb9f7de2ca2b27224eee7087e091df74b1405e3911c46bd204183"
