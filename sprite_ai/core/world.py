@@ -7,6 +7,7 @@ from typing import Any
 from loguru import logger
 
 from sprite_ai.event_manager import EventManager
+
 # from sprite_ai.core.sprite import Sprite
 
 

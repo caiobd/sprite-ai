@@ -1,5 +1,4 @@
-from PyQt5.QtCore import QAbstractListModel
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QAbstractListModel, Qt
 
 
 class MessageModel(QAbstractListModel):

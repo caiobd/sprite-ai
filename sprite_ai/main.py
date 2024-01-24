@@ -6,14 +6,15 @@ import sys
 from importlib import resources
 
 import platformdirs
+import typer
+import yaml
 from loguru import logger
 from plyer import notification
 from plyer.utils import platform
-import typer
-import yaml
-from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication
 
+from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
 from sprite_ai.core.sprite_behaviour import SpriteBehaviour
 from sprite_ai.core.world import World
@@ -24,8 +25,6 @@ from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from sprite_ai.ui.chat_window import ChatWindow
-from sprite_ai.controller.chat_window_controller import ChatWindowController
-
 
 APP_NAME = 'sprite-ai'
 ICON_EXTENTION = icon_extension = 'ico' if platform == 'win' else 'png'
@@ -66,10 +65,12 @@ def setup_logging():
     logger.add(sys.stdout, level='DEBUG')
     logger.add(LOG_FILE, level='DEBUG')
 
+
 def shutdown(app: QApplication):
     app.closeAllWindows()
     app.exit(0)
     os._exit(0)
+
 
 def main():
     user_data_dir = platformdirs.user_data_path(
@@ -134,7 +135,9 @@ def main():
         icon_location=icon_location,
     )
 
-    sprite = Sprite(sprite_gui=sprite_gui, sprite_behaviour=sprite_behaviour, world=world)
+    sprite = Sprite(
+        sprite_gui=sprite_gui, sprite_behaviour=sprite_behaviour, world=world
+    )
 
     world.event_manager.subscribe('notification', on_notification)
     world.event_manager.subscribe('exit', lambda _: shutdown(app))
@@ -145,6 +148,7 @@ def main():
     except KeyboardInterrupt as e:
         logger.info('exiting...')
         os._exit(0)
+
 
 if __name__ == '__main__':
     typer.run(main)
