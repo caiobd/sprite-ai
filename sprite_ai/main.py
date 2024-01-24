@@ -111,7 +111,6 @@ def main():
         model_config_dump = yaml.safe_load(config_file)
         model_config = LanguageModelConfig(**model_config_dump)
 
-    # model_config = default_model_configs.DOLPHIN_MINISTRAL_7B
     language_model = LanguageModelFactory().build(model_config)
 
     app = QApplication(sys.argv)
