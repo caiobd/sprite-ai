@@ -21,14 +21,13 @@ from sprite_ai.core.sprite_behaviour import SpriteBehaviour
 from sprite_ai.core.world import World
 from sprite_ai.default_animations import ANIMATIONS
 from sprite_ai.default_states import POSSIBLE_STATES
-from sprite_ai.gui.chat import ChatWindow
 from sprite_ai.gui.sprite_gui import SpriteGui
 from sprite_ai.language import default_model_configs
 from sprite_ai.language.default_model_configs import DOLPHIN_MINISTRAL_7B
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
-from sprite_ai.ui.chat_window import ChatWindow as NewChatWindow
+from sprite_ai.ui.chat_window import ChatWindow
 from sprite_ai.controller.chat_window_controller import ChatWindowController
 
 
@@ -47,8 +46,7 @@ LOG_FILE = LOG_DIR / 'events.log'
 
 
 def on_sprite_clicked(world: World, chat_window: ChatWindow):
-    t = th.Thread(target=chat_window.show)
-    t.start()
+    chat_window.show()
 
 
 def on_notification(world: World, message: str):
@@ -72,6 +70,10 @@ def setup_logging():
     logger.add(sys.stdout, level='DEBUG')
     logger.add(LOG_FILE, level='DEBUG')
 
+def shutdown(app: QApplication):
+    app.closeAllWindows()
+    app.exit(0)
+    os._exit(0)
 
 def main():
     user_data_dir = platformdirs.user_data_path(
@@ -114,14 +116,7 @@ def main():
 
     app = QApplication(sys.argv)
 
-    # chat_window = ChatWindow(
-    #     language_model,
-    #     on_chat_message=lambda event_future: on_notification(world, event_future),
-    #     on_canceled=lambda: on_canceled(world),
-    #     persistence_location=persistence_location,
-    # )
-
-    chat_window = NewChatWindow(world.event_manager)
+    chat_window = ChatWindow(world.event_manager)
     chat_window_controller = ChatWindowController(
         world.event_manager, language_model, persistence_location
     )
@@ -147,14 +142,14 @@ def main():
     sprite = Sprite(sprite_gui=sprite_gui, sprite_behaviour=sprite_behaviour, world=world)
 
     world.event_manager.subscribe('notification', on_notification)
+    world.event_manager.subscribe('exit', lambda _: shutdown(app))
+
     try:
         sprite.run()
         app.exec()
-        sprite.shudown()
     except KeyboardInterrupt as e:
         logger.info('exiting...')
         os._exit(0)
-
 
 if __name__ == '__main__':
     typer.run(main)

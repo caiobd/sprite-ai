@@ -2,7 +2,7 @@ from time import time
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QEvent, Qt
 from sprite_ai.event_manager import EventManager
-from sprite_ai.ui.chat_window_ui import Ui_Form
+from sprite_ai.ui.chat_window_ui import Ui_MainWindow
 from sprite_ai.ui.message_delegate import MessageDelegate
 
 from sprite_ai.ui.message_model import MessageModel
@@ -11,29 +11,41 @@ USER_ME = 0
 USER_THEM = 1
 
 
-class ChatWindow(QtWidgets.QWidget):
+class ChatWindow(QtWidgets.QMainWindow):
     message_recived = pyqtSignal(dict)
 
     def __init__(self, event_manager: EventManager):
         super().__init__()
 
         self.event_manager = event_manager
-        self.ui = Ui_Form()
+        self.ui = Ui_MainWindow()
         self.model = MessageModel()
 
         self.ui.setupUi(self)
         self.ui.lv_chat_history.setItemDelegate(MessageDelegate())
         self.ui.lv_chat_history.setModel(self.model)
-        self.ui.pb_send.clicked.connect(self.send_user_message)
+
+        # This allow overriding the event filter
         self.ui.te_chatinput.installEventFilter(self)
+        self.ui.pb_send.clicked.connect(self.send_user_message)
+        self.ui.a_exit.triggered.connect(self._exit_pressed)
+        
+        self.ui.a_exit.setShortcut(Qt.Key.Key_W & Qt.Modifier.CTRL)
+
         self.message_recived.connect(self.add_message)
         self.event_manager.subscribe(
             'ui.chat_window.add_message', self.message_recived.emit
         )
         self.show()
         self.hide()
+    
+    @pyqtSlot()
+    def _exit_pressed(self):
+        self.event_manager.publish('exit')
 
     def eventFilter(self, obj, event: QEvent):
+
+        # Send message if enter is pressed without holding shift
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if event.type() == QEvent.KeyPress and obj is self.ui.te_chatinput:
             if (
@@ -42,6 +54,10 @@ class ChatWindow(QtWidgets.QWidget):
                 and not modifiers == Qt.ShiftModifier
             ):
                 self.send_user_message()
+
+                # ignore keypress event
+                return True
+            
         return super().eventFilter(obj, event)
 
     @pyqtSlot()
