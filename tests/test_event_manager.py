@@ -11,7 +11,7 @@ def event_manager():
 
 
 def test_subscribe_single_callback(event_manager):
-    topic = "test"
+    topic = 'test'
 
     def callback(event: Any):
         pass
@@ -23,7 +23,7 @@ def test_subscribe_single_callback(event_manager):
 
 
 def test_subscribe_multiple_callbacks(event_manager):
-    topic = "test"
+    topic = 'test'
 
     def callback1(event: Any):
         pass
@@ -39,37 +39,37 @@ def test_subscribe_multiple_callbacks(event_manager):
 
 
 def test_subscribers_no_subscriber(event_manager):
-    topic = "test"
+    topic = 'test'
     subscribers = event_manager.subscribers(topic)
 
     assert subscribers == []
 
 
 def test_publish_single_callback(event_manager):
-    topic = "test"
+    topic = 'test'
     generic_list = []
 
     def callback(event: Any):
-        generic_list.append("element")
+        generic_list.append('element')
 
     event_manager.subscribe(topic, callback)
     event_manager.publish(topic)
 
-    assert generic_list == ["element"]
+    assert generic_list == ['element']
 
 
 def test_publish_multiple_callbacks(event_manager):
-    topic = "test"
+    topic = 'test'
     generic_list = []
 
     def callback1(event: Any):
-        generic_list.append("element1")
+        generic_list.append('element1')
 
     def callback2(event: Any):
-        generic_list.append("element2")
+        generic_list.append('element2')
 
     event_manager.subscribe(topic, callback1)
     event_manager.subscribe(topic, callback2)
     event_manager.publish(topic)
 
-    assert generic_list == ["element1", "element2"]
+    assert generic_list == ['element1', 'element2']

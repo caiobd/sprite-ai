@@ -9,7 +9,7 @@ from loguru import logger
 
 
 class ProgressBar:
-    def __init__(self, title: str = ""):
+    def __init__(self, title: str = ''):
         self.pbar = None
         self.title = title
         # This is used to covert progress bar unity
@@ -21,7 +21,9 @@ class ProgressBar:
         total_size = round(total_size * self.scale, 2)
 
         if not self.pbar:
-            self.pbar = progressbar.ProgressBar(maxval=total_size, prefix=self.title)
+            self.pbar = progressbar.ProgressBar(
+                maxval=total_size, prefix=self.title
+            )
             self.pbar.start()
 
         downloaded = block_num * block_size
@@ -38,14 +40,14 @@ def download_file(file_link, filename):
     try:
         if not os.path.isfile(filename):
             temp_file = tempfile.NamedTemporaryFile()
-            title = "Downloading language model"
+            title = 'Downloading language model'
             urllib.request.urlretrieve(
                 file_link, temp_file.name, reporthook=ProgressBar(title=title)
             )
             shutil.copy(temp_file.name, filename)
-            logger.info("Model file downloaded successfully.")
+            logger.info('Model file downloaded successfully.')
         else:
-            logger.info("Model file already exists.")
+            logger.info('Model file already exists.')
     finally:
         if temp_file is not None:
             temp_file.close()

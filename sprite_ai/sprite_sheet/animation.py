@@ -93,11 +93,13 @@ class AnimationController:
 
         self._x_flipped = False
         self._y_flipped = False
-        self._orientation = "right"
+        self._orientation = 'right'
 
-    def set_animation(self, name: str, flip_x: bool = False, flip_y: bool = False):
+    def set_animation(
+        self, name: str, flip_x: bool = False, flip_y: bool = False
+    ):
         if self._animations == None:
-            raise TypeError("Animations must be set and not None")
+            raise TypeError('Animations must be set and not None')
         try:
             animation: Animation = self._animations[name]
 
@@ -115,7 +117,7 @@ class AnimationController:
             )
 
     def _update_orientation(self):
-        flip_x = self._orientation == "right"
+        flip_x = self._orientation == 'right'
         self._animation.flip_x = flip_x
 
     def set_orientation(self, orientation: str):
@@ -141,7 +143,11 @@ class AnimationController:
 
     def draw_frame(self):
         if not all(
-            (self.canvas_image, self.sprite_sheet_image, self.sprite_sheet_position)
+            (
+                self.canvas_image,
+                self.sprite_sheet_image,
+                self.sprite_sheet_position,
+            )
         ):
             return
 
@@ -178,7 +184,9 @@ class AnimationController:
 
         image_transform = QTransform.fromScale(x_transform, y_transform)
 
-        transformed_canvas_image = self.canvas_image.transformed(image_transform)
+        transformed_canvas_image = self.canvas_image.transformed(
+            image_transform
+        )
         self.canvas_image.fill(Qt.transparent)
         painter.drawPixmap(0, 0, transformed_canvas_image)
 
@@ -195,7 +203,7 @@ class AnimationController:
 
     def play(self):
         if self._animation == None:
-            raise ValueError("animation must be set before play is called")
+            raise ValueError('animation must be set before play is called')
         self.is_animation_running = True
         self._start_animation_loop()
         self._stop_animation_timer = th.Timer(

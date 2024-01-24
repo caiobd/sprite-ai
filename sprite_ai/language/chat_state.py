@@ -14,5 +14,5 @@ class ChatState(BaseModel):
         return cls(**chat_state)
 
     def to_file(self, file_location: str):
-        with open(file_location, "w") as state_file:
+        with open(file_location, 'w') as state_file:
             yaml.safe_dump(self.model_dump(), state_file)

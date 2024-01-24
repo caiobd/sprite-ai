@@ -12,15 +12,17 @@ class LinearMovement(Movement):
     start: Coordinate
     end: Coordinate
     n_steps: int
-    _position: Coordinate = field(default_factory=lambda: Coordinate(0, 0), init=False)
+    _position: Coordinate = field(
+        default_factory=lambda: Coordinate(0, 0), init=False
+    )
     _step_index: int = field(default=0, init=False)
     step_increment: int = field(default=1, init=False)
 
     @property
     def orientation(self) -> str:
-        orientation = "right"
+        orientation = 'right'
         if self.start.x > self.end.x:
-            orientation = "left"
+            orientation = 'left'
 
         return orientation
 
@@ -42,8 +44,8 @@ class LinearMovement(Movement):
 
         if self.n_steps < 2:
             raise ValueError(
-                f"value {self.n_steps} is invalid for parameter n_steps,"
-                " value must be equal or greater than 2"
+                f'value {self.n_steps} is invalid for parameter n_steps,'
+                ' value must be equal or greater than 2'
             )
 
     def __next__(self):

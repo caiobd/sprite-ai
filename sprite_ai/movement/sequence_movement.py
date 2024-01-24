@@ -17,7 +17,9 @@ class SequenceMovement(Movement):
         if current_movement.is_at_endding():
             self._movement_index += 1
 
-        self._movement_index = min(self._movement_index, len(self._movements) - 1)
+        self._movement_index = min(
+            self._movement_index, len(self._movements) - 1
+        )
 
         return current_position
 

@@ -5,7 +5,9 @@ from sprite_ai.movement.linear_movement import LinearMovement
 
 
 class WalkingMovement(LinearMovement):
-    def __init__(self, world_size: tuple[int, int], current_position: Coordinate):
+    def __init__(
+        self, world_size: tuple[int, int], current_position: Coordinate
+    ):
         world_width, world_height = world_size
         start_coordinate = current_position
         if start_coordinate is None:

@@ -8,8 +8,10 @@ Callback = Callable[[Any], None]
 
 
 class EventManager:
-    def __init__(self, skip_topic_log:set[str]|None=None) -> None:
-        self.skip_topic_log: set[str] = skip_topic_log if skip_topic_log else set()
+    def __init__(self, skip_topic_log: set[str] | None = None) -> None:
+        self.skip_topic_log: set[str] = (
+            skip_topic_log if skip_topic_log else set()
+        )
         self.inscriptions: DefaultDict[str, list[Callback]] = defaultdict(list)
         self._lock = Lock()
 
@@ -21,8 +23,8 @@ class EventManager:
             topic (str): A topic to publish the object to
         """
         if topic not in self.skip_topic_log:
-            logger.debug(f"[{topic}] {message}")
-            
+            logger.debug(f'[{topic}] {message}')
+
         with self._lock:
             topic_callbacks = self.inscriptions[topic]
 
