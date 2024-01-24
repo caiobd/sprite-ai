@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import ctypes
 import os
 import shutil
 import sys
-import threading as th
 from importlib import resources
 
 import platformdirs
@@ -22,8 +20,6 @@ from sprite_ai.core.world import World
 from sprite_ai.default_animations import ANIMATIONS
 from sprite_ai.default_states import POSSIBLE_STATES
 from sprite_ai.gui.sprite_gui import SpriteGui
-from sprite_ai.language import default_model_configs
-from sprite_ai.language.default_model_configs import DOLPHIN_MINISTRAL_7B
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
