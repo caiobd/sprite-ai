@@ -1,4 +1,5 @@
 from importlib import resources
+
 from sprite_ai.language.language_model_config import LanguageModelConfig
 
 CAT_ASSISTANT_SYSTEM_PROMPT = (

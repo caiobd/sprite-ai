@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QMargins, QPoint, Qt
-from PyQt5.QtWidgets import QStyledItemDelegate
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QStyledItemDelegate
 
 USER_ME = 0
 USER_THEM = 1

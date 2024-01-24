@@ -7,7 +7,10 @@ from sprite_ai.movement.movement_factory import MovementFactory
 
 class Sprite:
     def __init__(
-        self, sprite_gui: SpriteGui, sprite_behaviour: SpriteBehaviour, world: World
+        self,
+        sprite_gui: SpriteGui,
+        sprite_behaviour: SpriteBehaviour,
+        world: World,
     ) -> None:
         self.sprite_gui = sprite_gui
         self.sprite_behaviour = sprite_behaviour
@@ -20,7 +23,9 @@ class Sprite:
         self.world.event_manager.subscribe(
             'ui.sprite.animation', self.on_animation_event
         )
-        self.world.event_manager.subscribe('ui.sprite.movement', self.on_movement_event)
+        self.world.event_manager.subscribe(
+            'ui.sprite.movement', self.on_movement_event
+        )
         self.world.event_manager.subscribe('ui.sprite.state', self.set_state)
         self.world.event_manager.subscribe('world.clock', self.on_clocktick)
         self.animation = None

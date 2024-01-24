@@ -1,10 +1,11 @@
 from time import time
+
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QEvent, Qt
+from PyQt5.QtCore import QEvent, Qt, pyqtSignal, pyqtSlot
+
 from sprite_ai.event_manager import EventManager
 from sprite_ai.ui.chat_window_ui import Ui_MainWindow
 from sprite_ai.ui.message_delegate import MessageDelegate
-
 from sprite_ai.ui.message_model import MessageModel
 
 USER_ME = 0
@@ -27,18 +28,18 @@ class ChatWindow(QtWidgets.QMainWindow):
 
         # This allow overriding the event filter
         self.ui.te_chatinput.installEventFilter(self)
-        
+
         self.ui.a_clear_chat.triggered.connect(self.clear_messages)
         self.ui.a_exit.triggered.connect(self._exit_pressed)
         self.ui.pb_send.clicked.connect(self.send_user_message)
-        
+
         self.message_recived.connect(self.add_message)
         self.event_manager.subscribe(
             'ui.chat_window.add_message', self.message_recived.emit
         )
         self.show()
         self.hide()
-    
+
     @pyqtSlot()
     def _exit_pressed(self):
         self.event_manager.publish('exit')
@@ -57,7 +58,7 @@ class ChatWindow(QtWidgets.QMainWindow):
 
                 # ignore keypress event
                 return True
-            
+
         return super().eventFilter(obj, event)
 
     @pyqtSlot()
@@ -69,10 +70,10 @@ class ChatWindow(QtWidgets.QMainWindow):
             'content': user_message,
         }
         self.add_message(message)
-        self.event_manager.publish('ui.chat_window.process_user_message', message)
+        self.event_manager.publish(
+            'ui.chat_window.process_user_message', message
+        )
         self.ui.te_chatinput.clear()
-    
-
 
     @pyqtSlot(dict)
     def add_message(self, message: dict):
@@ -91,7 +92,7 @@ class ChatWindow(QtWidgets.QMainWindow):
         self.model.add_message(sender_id, content)
         self.ui.lv_chat_history.scrollToBottom()
         self.model.layoutChanged.emit()
-    
+
     @pyqtSlot()
     def clear_messages(self):
         self.event_manager.publish('ui.chat_window.clear')

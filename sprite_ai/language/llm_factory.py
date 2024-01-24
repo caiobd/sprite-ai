@@ -1,14 +1,15 @@
 import os
+
+import platformdirs
 from langchain.llms.base import LLM
+from langchain.llms.llamacpp import LlamaCpp
 from langchain.llms.ollama import Ollama
 from langchain.llms.openai import OpenAI
 from langchain.llms.together import Together
-from langchain.llms.llamacpp import LlamaCpp
 from llama_cpp import suppress_stdout_stderr
-import platformdirs
 
-from sprite_ai.utils.download import download_file
 from sprite_ai.constants import APP_NAME
+from sprite_ai.utils.download import download_file
 
 
 class LLMFactory:
