@@ -24,6 +24,10 @@ class ChatWindowController:
         self.event_manager.subscribe(
             'ui.chat_window.process_user_message', self.process_user_message
         )
+        self.event_manager.subscribe(
+            'ui.chat_window.clear',
+            self.clear_chat_session
+        )
 
     def load_state(self):
         try:
@@ -42,6 +46,10 @@ class ChatWindowController:
     def save_state(self):
         self.chat_session.save_state(self.persistence_location)
         logger.info('Saved curent state')
+
+    def clear_chat_session(self, event):
+        self.chat_session.clear_state()
+        logger.info('Cleared curent state')
 
     def process_user_message(self, message: dict):
         content = message['content']

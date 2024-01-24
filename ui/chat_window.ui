@@ -70,6 +70,7 @@
     <property name="title">
      <string>Menu</string>
     </property>
+    <addaction name="a_clear_chat"/>
     <addaction name="a_exit"/>
    </widget>
    <addaction name="m_menu"/>
@@ -91,6 +92,11 @@
   <action name="a_new_chat">
    <property name="text">
     <string>New chat</string>
+   </property>
+  </action>
+  <action name="a_clear_chat">
+   <property name="text">
+    <string>Clear chat</string>
    </property>
   </action>
  </widget>

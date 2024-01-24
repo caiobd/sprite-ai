@@ -27,8 +27,11 @@ class ChatWindow(QtWidgets.QMainWindow):
 
         # This allow overriding the event filter
         self.ui.te_chatinput.installEventFilter(self)
-        self.ui.pb_send.clicked.connect(self.send_user_message)
+        
+        self.ui.a_clear_chat.triggered.connect(self.clear_messages)
         self.ui.a_exit.triggered.connect(self._exit_pressed)
+        self.ui.pb_send.clicked.connect(self.send_user_message)
+        
         self.message_recived.connect(self.add_message)
         self.event_manager.subscribe(
             'ui.chat_window.add_message', self.message_recived.emit
@@ -68,6 +71,8 @@ class ChatWindow(QtWidgets.QMainWindow):
         self.add_message(message)
         self.event_manager.publish('ui.chat_window.process_user_message', message)
         self.ui.te_chatinput.clear()
+    
+
 
     @pyqtSlot(dict)
     def add_message(self, message: dict):
@@ -85,3 +90,9 @@ class ChatWindow(QtWidgets.QMainWindow):
         content = message['content']
         self.model.add_message(sender_id, content)
         self.ui.lv_chat_history.scrollToBottom()
+        self.model.layoutChanged.emit()
+    
+    @pyqtSlot()
+    def clear_messages(self):
+        self.event_manager.publish('ui.chat_window.clear')
+        self.model.clear_messages()

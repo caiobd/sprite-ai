@@ -32,3 +32,6 @@ class LanguageModel:
     def save_memory(self, memory_file_location: str):
         with open(memory_file_location, 'wb') as memory_file:
             pickle.dump(self.llm_chain.memory, memory_file)
+    
+    def clear_memory(self):
+        self.llm_chain.memory.clear()

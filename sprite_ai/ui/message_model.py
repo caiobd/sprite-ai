@@ -24,3 +24,7 @@ class MessageModel(QAbstractListModel):
             self.messages.append((who, text))
             # Trigger refresh.
             self.layoutChanged.emit()
+
+    def clear_messages(self):
+        self.messages = []
+        self.layoutChanged.emit()

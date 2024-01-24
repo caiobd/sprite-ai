@@ -64,3 +64,7 @@ class ChatSession:
 
         self.chat_state = ChatState.from_file(chat_state_location)
         self.language_model.load_memory(language_model_memory_location)
+    
+    def clear_state(self):
+        self.chat_state = ChatState()
+        self.language_model.clear_memory()

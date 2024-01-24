@@ -55,6 +55,9 @@ class Ui_MainWindow(object):
         self.actionHide_window.setObjectName("actionHide_window")
         self.a_new_chat = QtWidgets.QAction(MainWindow)
         self.a_new_chat.setObjectName("a_new_chat")
+        self.a_clear_chat = QtWidgets.QAction(MainWindow)
+        self.a_clear_chat.setObjectName("a_clear_chat")
+        self.m_menu.addAction(self.a_clear_chat)
         self.m_menu.addAction(self.a_exit)
         self.mb_menubar.addAction(self.m_menu.menuAction())
 
@@ -70,3 +73,4 @@ class Ui_MainWindow(object):
         self.a_exit.setShortcut(_translate("MainWindow", "Ctrl+Q"))
         self.actionHide_window.setText(_translate("MainWindow", "Hide window"))
         self.a_new_chat.setText(_translate("MainWindow", "New chat"))
+        self.a_clear_chat.setText(_translate("MainWindow", "Clear chat"))
