@@ -29,9 +29,6 @@ class ChatWindow(QtWidgets.QMainWindow):
         self.ui.te_chatinput.installEventFilter(self)
         self.ui.pb_send.clicked.connect(self.send_user_message)
         self.ui.a_exit.triggered.connect(self._exit_pressed)
-        
-        self.ui.a_exit.setShortcut(Qt.Key.Key_W & Qt.Modifier.CTRL)
-
         self.message_recived.connect(self.add_message)
         self.event_manager.subscribe(
             'ui.chat_window.add_message', self.message_recived.emit
