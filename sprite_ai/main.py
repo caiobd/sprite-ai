@@ -112,7 +112,7 @@ def main():
 
     app = QApplication(sys.argv)
 
-    chat_window = ChatWindow(world.event_manager)
+    chat_window = ChatWindow(world.event_manager, config_location)
     chat_window_controller = ChatWindowController(
         world.event_manager, language_model, persistence_location
     )

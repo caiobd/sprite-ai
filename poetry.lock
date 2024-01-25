@@ -1850,6 +1850,21 @@ files = [
 doc = ["reno", "sphinx", "tornado (>=4.5)"]
 
 [[package]]
+name = "texteditor"
+version = "1.4.1"
+description = "Like webbrowser, but for the text editor."
+optional = false
+python-versions = "<4.0,>=3.5"
+files = [
+    {file = "texteditor-1.4.1-py3-none-any.whl", hash = "sha256:e19e587e795cac056b7470969d8dc187af73f2cf23eae279904fdecbe38692b3"},
+    {file = "texteditor-1.4.1.tar.gz", hash = "sha256:ab53fb8e2df2212eace989913210b1b10991a26718c4ee8f70928d81276095ae"},
+]
+
+[package.extras]
+dev = ["mypy", "pre-commit", "tox"]
+test = ["flake8", "flake8-bugbear", "flake8-import-order", "flake8-logging-format", "flake8-quotes", "pytest", "pytest-cov"]
+
+[[package]]
 name = "tokenizers"
 version = "0.15.1"
 description = ""
@@ -2273,4 +2288,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "62e7cb534b631be0bfb32d5d32ecf931244bbb4bf933f24b050d239300e15b6d"
+content-hash = "0b120ef34f6c48ec1ee7854fcdfa86dc4037fb67ee5429bb98ad658c92a0343a"
