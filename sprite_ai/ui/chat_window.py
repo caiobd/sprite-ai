@@ -1,7 +1,11 @@
+from concurrent import futures
+from pathlib import Path
 from time import time
+from concurrent.futures import ThreadPoolExecutor, Future
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QEvent, Qt, pyqtSignal, pyqtSlot
+import texteditor
 
 from sprite_ai.event_manager import EventManager
 from sprite_ai.ui.chat_window_ui import Ui_MainWindow
@@ -15,10 +19,14 @@ USER_THEM = 1
 class ChatWindow(QtWidgets.QMainWindow):
     message_recived = pyqtSignal(dict)
 
-    def __init__(self, event_manager: EventManager):
+    def __init__(
+        self, event_manager: EventManager, settings_location: str | Path
+    ):
         super().__init__()
 
         self.event_manager = event_manager
+        self.settings_location = settings_location
+        self._pool = ThreadPoolExecutor(max_workers=1)
         self.ui = Ui_MainWindow()
         self.model = MessageModel()
 
@@ -29,6 +37,7 @@ class ChatWindow(QtWidgets.QMainWindow):
         # This allow overriding the event filter
         self.ui.te_chatinput.installEventFilter(self)
 
+        self.ui.a_settings.triggered.connect(self.open_settings)
         self.ui.a_clear_chat.triggered.connect(self.clear_messages)
         self.ui.a_exit.triggered.connect(self._exit_pressed)
         self.ui.pb_send.clicked.connect(self.send_user_message)
@@ -45,7 +54,6 @@ class ChatWindow(QtWidgets.QMainWindow):
         self.event_manager.publish('exit')
 
     def eventFilter(self, obj, event: QEvent):
-
         # Send message if enter is pressed without holding shift
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if event.type() == QEvent.KeyPress and obj is self.ui.te_chatinput:
@@ -97,3 +105,16 @@ class ChatWindow(QtWidgets.QMainWindow):
     def clear_messages(self):
         self.event_manager.publish('ui.chat_window.clear')
         self.model.clear_messages()
+
+    @pyqtSlot()
+    def open_settings(self):
+        content_future = self._pool.submit(
+            texteditor.open, filename=self.settings_location
+        )
+
+        def write_content_update(content: Future[str]):
+            content = content.result()
+            with self.settings_location.open('w') as settings_file:
+                settings_file.write(content)
+
+        content_future.add_done_callback(write_content_update)
