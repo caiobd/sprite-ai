@@ -1,9 +1,12 @@
 from __future__ import annotations
+from concurrent.futures import Future, ThreadPoolExecutor
 
 import os
 import shutil
 import sys
 from importlib import resources
+import tempfile
+import time
 
 import platformdirs
 import typer
@@ -13,11 +16,13 @@ from plyer import notification
 from plyer.utils import platform
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
+from sprite_ai.ui.shortcut import QtKeyBinder
 
 from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
 from sprite_ai.core.sprite_behaviour import SpriteBehaviour
 from sprite_ai.core.world import World
+from sprite_ai.event_manager import EventManager
 from sprite_ai.default_animations import ANIMATIONS
 from sprite_ai.default_states import POSSIBLE_STATES
 from sprite_ai.gui.sprite_gui import SpriteGui
@@ -25,6 +30,9 @@ from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from sprite_ai.ui.chat_window import ChatWindow
+from sprite_ai.audio import recoder
+from sprite_ai.audio import transcriptor
+from concurrent.futures import Executor
 
 APP_NAME = 'sprite-ai'
 ICON_EXTENTION = icon_extension = 'ico' if platform == 'win' else 'png'
@@ -70,6 +78,32 @@ def shutdown(app: QApplication):
     app.closeAllWindows()
     app.exit(0)
     os._exit(0)
+
+
+def get_audio_prompt() -> str:
+    audio_file = tempfile.NamedTemporaryFile()
+    try:
+        recoder.record(audio_file.name)
+        trascription = transcriptor.transcribe(audio_file.name)
+    finally:
+        audio_file.close()
+
+    return trascription
+
+
+def toggle_audio_interaction(event_manager: EventManager, pool: Executor):
+    def send_message(prompt_future: Future[str]):
+        prompt = prompt_future.result()
+        message = {
+            'sender': 'user',
+            'timestamp': time.time(),
+            'content': prompt,
+        }
+        event_manager.publish('ui.chat_window.add_message', message)
+        event_manager.publish('ui.chat_window.process_user_message', message)
+
+    future = pool.submit(get_audio_prompt)
+    future.add_done_callback(send_message)
 
 
 def main():
@@ -139,12 +173,21 @@ def main():
         sprite_gui=sprite_gui, sprite_behaviour=sprite_behaviour, world=world
     )
 
+    thread_pool = ThreadPoolExecutor(max_workers=1)
+    sample_key_binder = QtKeyBinder(win_id=None)
+
+    sample_key_binder.register_hotkey(
+        'Ctrl+Shift+A',
+        lambda: toggle_audio_interaction(world.event_manager, thread_pool),
+    )
+
     world.event_manager.subscribe('notification', on_notification)
     world.event_manager.subscribe('exit', lambda _: shutdown(app))
 
     try:
         sprite.run()
         app.exec()
+        sample_key_binder.unregister_hotkey('Ctrl+Shift+A')
     except KeyboardInterrupt as e:
         logger.info('exiting...')
         os._exit(0)
