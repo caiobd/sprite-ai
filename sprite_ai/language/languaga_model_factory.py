@@ -2,8 +2,10 @@ import os
 
 from langchain.chains import LLMChain
 from langchain.llms.base import LLM
-from langchain.memory import (ConversationSummaryBufferMemory,
-                              ConversationSummaryMemory)
+from langchain.memory import (
+    ConversationSummaryBufferMemory,
+    ConversationSummaryMemory,
+)
 from langchain.prompts import PromptTemplate
 from loguru import logger
 

@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import sys
 from typing import Callable, Optional
 
@@ -37,3 +38,14 @@ class QtKeyBinder:
 
     def unregister_hotkey(self, hotkey: str) -> None:
         keybinder.unregister_hotkey(self.win_id, hotkey)
+
+
+class ShortcutManager:
+    def __init__(self) -> None:
+        self.thread_pool = ThreadPoolExecutor(max_workers=1)
+        self.key_binder = QtKeyBinder(win_id=None)
+
+    def register_shortcut(self, hotkey: str, callback: Callable):
+        self.key_binder.register_hotkey(
+            hotkey, lambda: self.thread_pool.submit(callback)
+        )

@@ -7,6 +7,7 @@ import sys
 from importlib import resources
 import tempfile
 import time
+from typing import Callable
 
 import platformdirs
 import typer
@@ -30,9 +31,8 @@ from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from sprite_ai.ui.chat_window import ChatWindow
-from sprite_ai.audio import recoder
-from sprite_ai.audio import transcriptor
-from concurrent.futures import Executor
+from sprite_ai.audio.stt import STT
+from sprite_ai.ui.shortcut import ShortcutManager
 
 APP_NAME = 'sprite-ai'
 ICON_EXTENTION = icon_extension = 'ico' if platform == 'win' else 'png'
@@ -50,6 +50,8 @@ LOG_FILE = LOG_DIR / 'events.log'
 
 def on_sprite_clicked(world: World, chat_window: ChatWindow):
     chat_window.show()
+    chat_window.raise_()
+    chat_window.activateWindow()
 
 
 def on_notification(world: World, message: str):
@@ -74,81 +76,72 @@ def setup_logging():
     logger.add(LOG_FILE, level='DEBUG')
 
 
-def shutdown(app: QApplication):
-    app.closeAllWindows()
-    app.exit(0)
+def shutdown(qapp: QApplication):
     os._exit(0)
 
 
 def get_audio_prompt() -> str:
-    audio_file = tempfile.NamedTemporaryFile()
-    try:
-        recoder.record(audio_file.name)
-        trascription = transcriptor.transcribe(audio_file.name)
-    finally:
-        audio_file.close()
-
-    return trascription
+    stt = STT()
+    transcription = stt.listen()
+    return transcription
 
 
-def toggle_audio_interaction(event_manager: EventManager, pool: Executor):
-    def send_message(prompt_future: Future[str]):
-        prompt = prompt_future.result()
-        message = {
-            'sender': 'user',
-            'timestamp': time.time(),
-            'content': prompt,
-        }
-        event_manager.publish('ui.chat_window.add_message', message)
-        event_manager.publish('ui.chat_window.process_user_message', message)
+def toggle_audio_interaction(event_manager: EventManager):
+    prompt = get_audio_prompt()
+    message = {
+        'sender': 'user',
+        'timestamp': time.time(),
+        'content': prompt,
+    }
+    event_manager.publish('ui.chat_window.add_message', message)
+    event_manager.publish('ui.chat_window.process_user_message', message)
 
-    future = pool.submit(get_audio_prompt)
-    future.add_done_callback(send_message)
+
+class App:
+    def __init__(self, app_name: str):
+        self.user_data_dir = platformdirs.user_data_path(
+            appname=APP_NAME,
+            appauthor=None,
+            version=None,
+            roaming=False,
+            ensure_exists=True,
+        )
+        self.persistence_location = str(self.user_data_dir / 'state')
+        self.sprite_sheet_location = str(
+            resources.path('sprite_ai.resources.sprites', 'fred.png')
+        )
+        self.icon_location = str(
+            resources.path('sprite_ai.resources.icons', 'carboardbox_open.png')
+        )
+        self.config_location = self.user_data_dir / 'config.yaml'
+
+    def load_config(self) -> LanguageModelConfig:
+        if not self.config_location.is_file():
+            default_config_location = resources.path(
+                'sprite_ai.resources', 'default_config.yaml'
+            )
+            shutil.copy2(default_config_location, self.config_location)
+
+        with self.config_location.open(encoding='UTF-8') as config_file:
+            model_config_dump = yaml.safe_load(config_file)
+            model_config = LanguageModelConfig(**model_config_dump)
+
+        return model_config
 
 
 def main():
-    user_data_dir = platformdirs.user_data_path(
-        appname=APP_NAME,
-        appauthor=None,
-        version=None,
-        roaming=False,
-        ensure_exists=True,
-    )
-    persistence_location = str(user_data_dir / 'state')
-    sprite_sheet_location = str(
-        resources.path('sprite_ai.resources.sprites', 'fred.png')
-    )
-    icon_location = str(
-        resources.path('sprite_ai.resources.icons', 'carboardbox_open.png')
-    )
+    app = App(APP_NAME)
+    model_config = app.load_config()
 
-    sprite_behaviour = SpriteBehaviour(
-        possible_states=POSSIBLE_STATES, first_state='appearing'
-    )
-    sprite_sheet_metadata = SpriteSheetMetadata(
-        sprite_sheet_location, 5888, 128, 46, 1
-    )
     world = World((3840, 2160))
-
-    config_location = user_data_dir / 'config.yaml'
-
-    if not config_location.is_file():
-        default_config_location = resources.path(
-            'sprite_ai.resources', 'default_config.yaml'
-        )
-        shutil.copy2(default_config_location, config_location)
-
-    with config_location.open(encoding='UTF-8') as config_file:
-        model_config_dump = yaml.safe_load(config_file)
-        model_config = LanguageModelConfig(**model_config_dump)
 
     language_model = LanguageModelFactory().build(model_config)
 
-    app = QApplication(sys.argv)
+    qapp = QApplication(sys.argv)
 
-    chat_window = ChatWindow(world.event_manager, config_location)
+    chat_window = ChatWindow(world.event_manager, app.config_location)
     chat_window_controller = ChatWindowController(
-        world.event_manager, language_model, persistence_location
+        world.event_manager, language_model, app.persistence_location
     )
 
     try:
@@ -156,38 +149,38 @@ def main():
     except FileNotFoundError as e:
         logger.error(f'Failed to load state, {e}')
 
-    if icon_location:
-        app.setWindowIcon(QIcon(icon_location))
-    screen_size = app.primaryScreen().size()
+    if app.icon_location:
+        qapp.setWindowIcon(QIcon(app.icon_location))
+    screen_size = qapp.primaryScreen().size()
     screen_size = (screen_size.width(), screen_size.height())
 
+    sprite_sheet_metadata = SpriteSheetMetadata(
+        app.sprite_sheet_location, 5888, 128, 46, 1
+    )
     sprite_gui = SpriteGui(
         screen_size,
         sprite_sheet_metadata,
         ANIMATIONS,
         on_clicked=lambda event: on_sprite_clicked(world, chat_window),
-        icon_location=icon_location,
+        icon_location=app.icon_location,
     )
 
+    sprite_behaviour = SpriteBehaviour(
+        possible_states=POSSIBLE_STATES, first_state='appearing'
+    )
     sprite = Sprite(
         sprite_gui=sprite_gui, sprite_behaviour=sprite_behaviour, world=world
     )
-
-    thread_pool = ThreadPoolExecutor(max_workers=1)
-    sample_key_binder = QtKeyBinder(win_id=None)
-
-    sample_key_binder.register_hotkey(
-        'Ctrl+Shift+A',
-        lambda: toggle_audio_interaction(world.event_manager, thread_pool),
+    shortcut_manager = ShortcutManager()
+    shortcut_manager.register_shortcut(
+        'Ctrl+Shift+A', lambda: toggle_audio_interaction(world.event_manager)
     )
-
     world.event_manager.subscribe('notification', on_notification)
     world.event_manager.subscribe('exit', lambda _: shutdown(app))
 
     try:
         sprite.run()
-        app.exec()
-        sample_key_binder.unregister_hotkey('Ctrl+Shift+A')
+        qapp.exec()
     except KeyboardInterrupt as e:
         logger.info('exiting...')
         os._exit(0)
