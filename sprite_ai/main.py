@@ -2,6 +2,7 @@ from __future__ import annotations
 from concurrent.futures import Future, ThreadPoolExecutor
 
 import os
+from pathlib import Path
 import shutil
 import sys
 from importlib import resources
@@ -17,6 +18,7 @@ from plyer import notification
 from plyer.utils import platform
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
+from sprite_ai.assistant.assistant import Assistant
 from sprite_ai.ui.shortcut import QtKeyBinder
 
 from sprite_ai.controller.chat_window_controller import ChatWindowController
@@ -114,13 +116,22 @@ class App:
             resources.path('sprite_ai.resources.icons', 'carboardbox_open.png')
         )
         self.config_location = self.user_data_dir / 'config.yaml'
+        lm_config = self.load_config(self.config_location)
+        # self.assistant = Assistant(lm_config)
+        self.language_model = LanguageModelFactory().build(
+            lm_config
+        )   # remove and use the assistant instead
 
-    def load_config(self) -> LanguageModelConfig:
-        if not self.config_location.is_file():
+        self.initialize_gui(self.config_location)
+        self.initialize_sensors()
+
+    def load_config(self, config_location: Path | str) -> LanguageModelConfig:
+        config_location = Path(config_location)
+        if not config_location.is_file():
             default_config_location = resources.path(
                 'sprite_ai.resources', 'default_config.yaml'
             )
-            shutil.copy2(default_config_location, self.config_location)
+            shutil.copy2(default_config_location, config_location)
 
         with self.config_location.open(encoding='UTF-8') as config_file:
             model_config_dump = yaml.safe_load(config_file)
@@ -128,62 +139,71 @@ class App:
 
         return model_config
 
+    def initialize_gui(self, config_location: Path | str):
+        config_location = Path(config_location)
+        self.world = World((3840, 2160))
+        self.gui_backend = QApplication(sys.argv)
+        self.chat_window = ChatWindow(
+            self.world.event_manager,
+            config_location,  # remove checkk if config is needed here
+        )
+        self.chat_window_controller = ChatWindowController(  # this must be inserted in a frontend (ui) class along with all gui components
+            self.world.event_manager,
+            self.language_model,  # this must be removed from controller, this interface will be done via events
+            self.persistence_location,
+        )
+        try:
+            self.chat_window_controller.load_state()
+        except FileNotFoundError as e:
+            logger.error(f'Failed to load state, {e}')
+
+        if self.icon_location:
+            self.gui_backend.setWindowIcon(QIcon(self.icon_location))
+        screen_size = self.gui_backend.primaryScreen().size()
+        screen_size = (screen_size.width(), screen_size.height())
+
+        sprite_sheet_metadata = SpriteSheetMetadata(
+            self.sprite_sheet_location, 5888, 128, 46, 1
+        )
+        sprite_gui = SpriteGui(
+            screen_size,
+            sprite_sheet_metadata,
+            ANIMATIONS,
+            on_clicked=lambda event: on_sprite_clicked(
+                self.world, self.chat_window
+            ),
+            icon_location=self.icon_location,
+        )
+        sprite_behaviour = SpriteBehaviour(
+            possible_states=POSSIBLE_STATES, first_state='appearing'
+        )
+        self.sprite = Sprite(
+            sprite_gui=sprite_gui,
+            sprite_behaviour=sprite_behaviour,
+            world=self.world,
+        )
+
+    def initialize_sensors(self):
+        shortcut_manager = ShortcutManager()
+        shortcut_manager.register_shortcut(
+            'Ctrl+Shift+A',
+            lambda: toggle_audio_interaction(self.world.event_manager),
+        )
+        self.world.event_manager.subscribe('notification', on_notification)
+        self.world.event_manager.subscribe('exit', lambda _: shutdown(self))
+
+    def run(self):
+        try:
+            self.sprite.run()
+            self.gui_backend.exec()
+        except KeyboardInterrupt as e:
+            logger.info('exiting...')
+            os._exit(0)
+
 
 def main():
     app = App(APP_NAME)
-    model_config = app.load_config()
-
-    world = World((3840, 2160))
-
-    language_model = LanguageModelFactory().build(model_config)
-
-    qapp = QApplication(sys.argv)
-
-    chat_window = ChatWindow(world.event_manager, app.config_location)
-    chat_window_controller = ChatWindowController(
-        world.event_manager, language_model, app.persistence_location
-    )
-
-    try:
-        chat_window_controller.load_state()
-    except FileNotFoundError as e:
-        logger.error(f'Failed to load state, {e}')
-
-    if app.icon_location:
-        qapp.setWindowIcon(QIcon(app.icon_location))
-    screen_size = qapp.primaryScreen().size()
-    screen_size = (screen_size.width(), screen_size.height())
-
-    sprite_sheet_metadata = SpriteSheetMetadata(
-        app.sprite_sheet_location, 5888, 128, 46, 1
-    )
-    sprite_gui = SpriteGui(
-        screen_size,
-        sprite_sheet_metadata,
-        ANIMATIONS,
-        on_clicked=lambda event: on_sprite_clicked(world, chat_window),
-        icon_location=app.icon_location,
-    )
-
-    sprite_behaviour = SpriteBehaviour(
-        possible_states=POSSIBLE_STATES, first_state='appearing'
-    )
-    sprite = Sprite(
-        sprite_gui=sprite_gui, sprite_behaviour=sprite_behaviour, world=world
-    )
-    shortcut_manager = ShortcutManager()
-    shortcut_manager.register_shortcut(
-        'Ctrl+Shift+A', lambda: toggle_audio_interaction(world.event_manager)
-    )
-    world.event_manager.subscribe('notification', on_notification)
-    world.event_manager.subscribe('exit', lambda _: shutdown(app))
-
-    try:
-        sprite.run()
-        qapp.exec()
-    except KeyboardInterrupt as e:
-        logger.info('exiting...')
-        os._exit(0)
+    app.run()
 
 
 if __name__ == '__main__':

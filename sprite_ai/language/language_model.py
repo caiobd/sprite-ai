@@ -12,13 +12,16 @@ class LanguageModel:
     def __init__(self, llm_chain: LLMChain):
         self.llm_chain = llm_chain
 
-    def awnser(self, prompt: str) -> str:
+    def foward(self, prompt: str) -> str:
         if self.llm_chain:
             awnser = self.llm_chain.predict(user_input=prompt)
         else:
             raise RuntimeError('Failed to load llm model')
 
         return awnser
+
+    def __call__(self, prompt: str) -> str:
+        return self.foward(prompt)
 
     def messages(self):
         return self.llm_chain.memory.chat_memory.messages

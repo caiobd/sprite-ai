@@ -1,4 +1,6 @@
+from io import BytesIO
 import time
+from typing import Any
 
 from faster_whisper import WhisperModel
 from loguru import logger
@@ -11,10 +13,19 @@ class Transcriber:
             self.model_size, device=device, compute_type='float16'
         )
 
-    def transcribe(self, file_location: str, vad_filter=True) -> str:
+    def foward(self, audio: BytesIO | str, vad_filter=True) -> str:
+        """Transcribes speach from audio
+
+        Args:
+            audio (BytesIO | str): Audio can be a file path or a ByteIO with audio content
+            vad_filter (bool, optional): If True enables prefiltering with Voice Activity Detecion. Defaults to True.
+
+        Returns:
+            str: Audio transcription
+        """
         start = time.time()
         segments, info = self.model.transcribe(
-            file_location, beam_size=5, vad_filter=vad_filter
+            audio, beam_size=5, vad_filter=vad_filter
         )
 
         logger.info(
@@ -31,3 +42,6 @@ class Transcriber:
         )
 
         return transcription
+
+    def __call__(self, audio: BytesIO | str, vad_filter=True) -> str:
+        return self.foward(audio, vad_filter)

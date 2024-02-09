@@ -28,7 +28,7 @@ class ChatSession:
         self.chat_state.chat_history.append(chat_message)
 
         message_future = self._pool.submit(
-            self.language_model.awnser, chat_message.content
+            self.language_model.foward, chat_message.content
         )
         message_future.add_done_callback(self._log_chat_awnser)
         if callback is not None:
