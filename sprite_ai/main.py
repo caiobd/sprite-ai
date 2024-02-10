@@ -11,7 +11,8 @@ import platformdirs
 import typer
 import yaml
 from loguru import logger
-from plyer import notification
+
+# from plyer import notification
 from plyer.utils import platform
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
@@ -31,65 +32,18 @@ ICON_EXTENTION = icon_extension = 'ico' if platform == 'win' else 'png'
 ICON_FILE = str(
     resources.path('sprite_ai.resources.icons', f'icon.{ICON_EXTENTION}')
 )
-LOG_DIR = platformdirs.user_log_path(
-    appname=APP_NAME,
-    appauthor=None,
-    version=None,
-    ensure_exists=True,
-)
-LOG_FILE = LOG_DIR / 'events.log'
-
-
-def on_sprite_clicked(chat_window_controller: ChatWindowController):
-    chat_window_controller.show()
-
-
-def on_notification(world: World, message: str):
-    title = APP_NAME
-
-    notification.notify(
-        title=title,
-        message=message,
-        app_name=APP_NAME,
-        app_icon=ICON_FILE,
-    )
-    world.event_manager.publish('ui.sprite.state', 'jumping_idle')
-
-
-def on_canceled(world: World):
-    world.event_manager.publish('ui.sprite.state', 'walking')
-
-
-def setup_logging():
-    logger.remove()
-    logger.add(sys.stdout, level='DEBUG')
-    logger.add(LOG_FILE, level='DEBUG')
-
-
-def shutdown():
-    os._exit(0)
-
-
-def get_audio_prompt() -> str:
-    stt = STT()
-    transcription = stt.listen()
-    return transcription
-
-
-def toggle_audio_interaction(chat_window_controller: ChatWindowController):
-    prompt = get_audio_prompt()
-    message = {
-        'sender': 'user',
-        'timestamp': time.time(),
-        'content': prompt,
-    }
-    chat_window_controller.process_user_message(message)
 
 
 class App:
-    def __init__(self, app_name: str):
+    def __init__(self, app_name: str, log_level: str = 'INFO'):
+        self.log_dir = platformdirs.user_log_path(
+            appname=app_name,
+            appauthor=None,
+            version=None,
+            ensure_exists=True,
+        )
         self.user_data_dir = platformdirs.user_data_path(
-            appname=APP_NAME,
+            appname=app_name,
             appauthor=None,
             version=None,
             roaming=False,
@@ -103,6 +57,8 @@ class App:
             resources.path('sprite_ai.resources.icons', 'carboardbox_open.png')
         )
         self.config_location = self.user_data_dir / 'config.yaml'
+
+        self.setup_logging(log_level)
         lm_config = self.load_config(self.config_location)
         # self.assistant = Assistant(lm_config)
         self.language_model = LanguageModelFactory().build(
@@ -111,6 +67,12 @@ class App:
 
         self.initialize_gui(self.config_location)
         self.initialize_sensors()
+
+    def setup_logging(self, log_level='INFO'):
+        log_location = self.log_dir / 'events.log'
+        logger.remove()
+        logger.add(sys.stdout, level=log_level)
+        logger.add(log_location, level=log_level)
 
     def load_config(self, config_location: Path | str) -> LanguageModelConfig:
         config_location = Path(config_location)
@@ -132,10 +94,11 @@ class App:
         self.gui_backend = QApplication(sys.argv)
         self.chat_window_controller = ChatWindowController(  # this must be inserted in a frontend (ui) class along with all gui components
             self.world.event_manager,
-            self.language_model,  # this must be removed from controller, this interface will be done via events
+            self.language_model,  # this must be removed from controller, this interface will be done via events or via callbacks
             self.persistence_location,
             config_location,
-            on_exit=lambda: shutdown(),
+            on_exit=lambda: self.shutdown(),
+            on_user_message=lambda: self.sprite.set_state('thinking'),
         )
         try:
             self.chat_window_controller.load_state()
@@ -150,18 +113,32 @@ class App:
         self.sprite = Sprite(
             world=self.world,
             sprite_sheet_location=self.sprite_sheet_location,
-            on_clicked=lambda _: on_sprite_clicked(
-                self.chat_window_controller
-            ),
+            on_clicked=lambda _: self.on_sprite_clicked(),
         )
 
     def initialize_sensors(self):
         shortcut_manager = ShortcutManager()
         shortcut_manager.register_shortcut(
             'Ctrl+Shift+A',
-            lambda: toggle_audio_interaction(self.chat_window_controller),
+            lambda: self.listen_prompt(),
         )
-        self.world.event_manager.subscribe('notification', on_notification)
+
+    def on_sprite_clicked(self):
+        self.chat_window_controller.show()
+
+    def get_audio_prompt(self) -> str:
+        stt = STT()
+        transcription = stt.listen()
+        return transcription
+
+    def listen_prompt(self):
+        prompt = self.get_audio_prompt()
+        message = {
+            'sender': 'user',
+            'timestamp': time.time(),
+            'content': prompt,
+        }
+        self.chat_window_controller.process_user_message(message)
 
     def run(self):
         try:
@@ -171,9 +148,12 @@ class App:
             logger.info('exiting...')
             os._exit(0)
 
+    def shutdown(self):
+        os._exit(0)
+
 
 def main():
-    app = App(APP_NAME)
+    app = App(APP_NAME, log_level='DEBUG')
     app.run()
 
 

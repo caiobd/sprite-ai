@@ -21,6 +21,7 @@ class ChatWindowController:
         persistence_location: str,
         settings_location: str | Path,
         on_exit: Callable,
+        on_user_message: Callable,
     ) -> None:
 
         self.event_manager = event_manager
@@ -36,6 +37,7 @@ class ChatWindowController:
 
         self.chat_session = ChatSession(language_model)
         self._pool = ThreadPoolExecutor()
+        self.on_user_message = on_user_message
 
     def load_state(self):
         try:
@@ -67,7 +69,7 @@ class ChatWindowController:
         self.chat_session.send_message(
             chat_message.content, self._publish_awnser
         )
-        self.event_manager.publish('ui.sprite.state', 'thinking')
+        self.on_user_message()
 
     def _publish_awnser(self, awnser_future: Future[str]):
         try:
