@@ -1,13 +1,10 @@
-from concurrent import futures
 from pathlib import Path
 from time import time
-from concurrent.futures import ThreadPoolExecutor, Future
+from typing import Callable
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QEvent, Qt, pyqtSignal, pyqtSlot
-import texteditor
 
-from sprite_ai.event_manager import EventManager
 from sprite_ai.ui.chat_window_ui import Ui_MainWindow
 from sprite_ai.ui.message_delegate import MessageDelegate
 from sprite_ai.ui.message_model import MessageModel
@@ -20,13 +17,14 @@ class ChatWindow(QtWidgets.QMainWindow):
     message_recived = pyqtSignal(dict)
 
     def __init__(
-        self, event_manager: EventManager, settings_location: str | Path
+        self,
+        on_clear_chat: Callable,
+        on_user_message: Callable,
+        on_open_settings: Callable,
+        on_exit: Callable,
     ):
         super().__init__()
 
-        self.event_manager = event_manager
-        self.settings_location = settings_location
-        self._pool = ThreadPoolExecutor(max_workers=1)
         self.ui = Ui_MainWindow()
         self.model = MessageModel()
 
@@ -41,17 +39,19 @@ class ChatWindow(QtWidgets.QMainWindow):
         self.ui.a_clear_chat.triggered.connect(self.clear_messages)
         self.ui.a_exit.triggered.connect(self._exit_pressed)
         self.ui.pb_send.clicked.connect(self.send_user_message)
-
         self.message_recived.connect(self.add_message)
-        self.event_manager.subscribe(
-            'ui.chat_window.add_message', self.message_recived.emit
-        )
+
+        self.on_clear_chat = on_clear_chat
+        self.on_user_message = on_user_message
+        self.on_open_settings = on_open_settings
+        self.on_exit = on_exit
+
         self.show()
         self.hide()
 
     @pyqtSlot()
     def _exit_pressed(self):
-        self.event_manager.publish('exit')
+        self.on_exit()
 
     def eventFilter(self, obj, event: QEvent):
         # Send message if enter is pressed without holding shift
@@ -77,10 +77,7 @@ class ChatWindow(QtWidgets.QMainWindow):
             'timestamp': time(),
             'content': user_message,
         }
-        self.add_message(message)
-        self.event_manager.publish(
-            'ui.chat_window.process_user_message', message
-        )
+        self.on_user_message(message)
         self.ui.te_chatinput.clear()
 
     @pyqtSlot(dict)
@@ -103,18 +100,9 @@ class ChatWindow(QtWidgets.QMainWindow):
 
     @pyqtSlot()
     def clear_messages(self):
-        self.event_manager.publish('ui.chat_window.clear')
+        self.on_clear_chat()
         self.model.clear_messages()
 
     @pyqtSlot()
     def open_settings(self):
-        content_future = self._pool.submit(
-            texteditor.open, filename=self.settings_location
-        )
-
-        def write_content_update(content: Future[str]):
-            content = content.result()
-            with self.settings_location.open('w') as settings_file:
-                settings_file.write(content)
-
-        content_future.add_done_callback(write_content_update)
+        self.on_open_settings()

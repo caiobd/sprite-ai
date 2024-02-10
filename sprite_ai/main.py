@@ -1,14 +1,11 @@
 from __future__ import annotations
-from concurrent.futures import Future, ThreadPoolExecutor
 
 import os
 from pathlib import Path
 import shutil
 import sys
 from importlib import resources
-import tempfile
 import time
-from typing import Callable
 
 import platformdirs
 import typer
@@ -19,20 +16,13 @@ from plyer.utils import platform
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from sprite_ai.assistant.assistant import Assistant
-from sprite_ai.ui.shortcut import QtKeyBinder
 
 from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
-from sprite_ai.core.sprite_behaviour import SpriteBehaviour
 from sprite_ai.core.world import World
 from sprite_ai.event_manager import EventManager
-from sprite_ai.default_animations import ANIMATIONS
-from sprite_ai.default_states import POSSIBLE_STATES
-from sprite_ai.gui.sprite_gui import SpriteGui
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
-from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
-from sprite_ai.ui.chat_window import ChatWindow
 from sprite_ai.audio.stt import STT
 from sprite_ai.ui.shortcut import ShortcutManager
 
@@ -50,10 +40,8 @@ LOG_DIR = platformdirs.user_log_path(
 LOG_FILE = LOG_DIR / 'events.log'
 
 
-def on_sprite_clicked(world: World, chat_window: ChatWindow):
-    chat_window.show()
-    chat_window.raise_()
-    chat_window.activateWindow()
+def on_sprite_clicked(chat_window_controller: ChatWindowController):
+    chat_window_controller.show()
 
 
 def on_notification(world: World, message: str):
@@ -78,7 +66,7 @@ def setup_logging():
     logger.add(LOG_FILE, level='DEBUG')
 
 
-def shutdown(qapp: QApplication):
+def shutdown():
     os._exit(0)
 
 
@@ -88,15 +76,14 @@ def get_audio_prompt() -> str:
     return transcription
 
 
-def toggle_audio_interaction(event_manager: EventManager):
+def toggle_audio_interaction(chat_window_controller: ChatWindowController):
     prompt = get_audio_prompt()
     message = {
         'sender': 'user',
         'timestamp': time.time(),
         'content': prompt,
     }
-    event_manager.publish('ui.chat_window.add_message', message)
-    event_manager.publish('ui.chat_window.process_user_message', message)
+    chat_window_controller.process_user_message(message)
 
 
 class App:
@@ -143,14 +130,12 @@ class App:
         config_location = Path(config_location)
         self.world = World((3840, 2160))
         self.gui_backend = QApplication(sys.argv)
-        self.chat_window = ChatWindow(
-            self.world.event_manager,
-            config_location,  # remove checkk if config is needed here
-        )
         self.chat_window_controller = ChatWindowController(  # this must be inserted in a frontend (ui) class along with all gui components
             self.world.event_manager,
             self.language_model,  # this must be removed from controller, this interface will be done via events
             self.persistence_location,
+            config_location,
+            on_exit=lambda: shutdown(),
         )
         try:
             self.chat_window_controller.load_state()
@@ -165,8 +150,8 @@ class App:
         self.sprite = Sprite(
             world=self.world,
             sprite_sheet_location=self.sprite_sheet_location,
-            on_clicked=lambda event: on_sprite_clicked(
-                self.world, self.chat_window
+            on_clicked=lambda _: on_sprite_clicked(
+                self.chat_window_controller
             ),
         )
 
@@ -174,10 +159,9 @@ class App:
         shortcut_manager = ShortcutManager()
         shortcut_manager.register_shortcut(
             'Ctrl+Shift+A',
-            lambda: toggle_audio_interaction(self.world.event_manager),
+            lambda: toggle_audio_interaction(self.chat_window_controller),
         )
         self.world.event_manager.subscribe('notification', on_notification)
-        self.world.event_manager.subscribe('exit', lambda _: shutdown(self))
 
     def run(self):
         try:

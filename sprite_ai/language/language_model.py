@@ -1,4 +1,5 @@
 from __future__ import annotations
+from pathlib import Path
 
 import pickle
 from dataclasses import dataclass
@@ -26,14 +27,16 @@ class LanguageModel:
     def messages(self):
         return self.llm_chain.memory.chat_memory.messages
 
-    def load_memory(self, memory_file_location: str):
-        with open(memory_file_location, 'rb') as memory_file:
+    def load_memory(self, memory_file_location: str | Path):
+        memory_file_location = Path(memory_file_location)
+        with memory_file_location.open('rb') as memory_file:
             with suppress_stdout_stderr():
                 memory = pickle.load(memory_file)
         self.llm_chain.memory = memory
 
-    def save_memory(self, memory_file_location: str):
-        with open(memory_file_location, 'wb') as memory_file:
+    def save_memory(self, memory_file_location: str | Path):
+        memory_file_location = Path(memory_file_location)
+        with memory_file_location.open('wb') as memory_file:
             pickle.dump(self.llm_chain.memory, memory_file)
 
     def clear_memory(self):

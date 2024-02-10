@@ -1,4 +1,5 @@
 from io import BytesIO
+from pathlib import Path
 from typing import Any
 from sprite_ai.audio.transcriber import Transcriber
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
@@ -31,6 +32,12 @@ class Assistant:
         awnser = self.language_model(user_request)
 
         return awnser
+
+    def save_state(self, save_location: str | Path):
+        self.language_model.save_memory(save_location)
+
+    def load_state(self, load_location: str | Path):
+        self.language_model.load_memory(load_location)
 
     def __call__(self, user_request: BytesIO | str) -> str:
         self.foward(user_request)
