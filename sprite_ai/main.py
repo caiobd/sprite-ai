@@ -26,7 +26,7 @@ from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.audio.stt import STT
 from sprite_ai.ui.shortcut import ShortcutManager
-
+from sprite_ai.constants import APP_NAME
 
 
 class App:
@@ -148,13 +148,6 @@ class App:
 
 
 def main():
-    APP_NAME = 'sprite-ai'
-    ICON_EXTENTION = icon_extension = 'ico' if platform == 'win' else 'png'
-    ICON_FILE = str(
-        resources.path('sprite_ai.resources.icons', f'icon.{ICON_EXTENTION}')
-    )
-
-
     app = App(APP_NAME, log_level='DEBUG')
     app.run()
 
