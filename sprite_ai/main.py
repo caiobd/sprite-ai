@@ -162,25 +162,12 @@ class App:
         screen_size = self.gui_backend.primaryScreen().size()
         screen_size = (screen_size.width(), screen_size.height())
 
-        sprite_sheet_metadata = SpriteSheetMetadata(
-            self.sprite_sheet_location, 5888, 128, 46, 1
-        )
-        sprite_gui = SpriteGui(
-            screen_size,
-            sprite_sheet_metadata,
-            ANIMATIONS,
+        self.sprite = Sprite(
+            world=self.world,
+            sprite_sheet_location=self.sprite_sheet_location,
             on_clicked=lambda event: on_sprite_clicked(
                 self.world, self.chat_window
             ),
-            icon_location=self.icon_location,
-        )
-        sprite_behaviour = SpriteBehaviour(
-            possible_states=POSSIBLE_STATES, first_state='appearing'
-        )
-        self.sprite = Sprite(
-            sprite_gui=sprite_gui,
-            sprite_behaviour=sprite_behaviour,
-            world=self.world,
         )
 
     def initialize_sensors(self):
