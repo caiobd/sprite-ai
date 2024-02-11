@@ -70,6 +70,37 @@ class App:
         logger.add(sys.stdout, level=log_level)
         logger.add(log_location, level=log_level)
 
+    def initialize_gui(self, config_location: Path | str):
+        config_location = Path(config_location)
+        self.gui_backend = QApplication(sys.argv)
+        qscreen_size = self.gui_backend.primaryScreen().size()
+        self.screen_size = (qscreen_size.width(), qscreen_size.height())
+        self.chat_window_controller = ChatWindowController(  # this must be inserted in a frontend (ui) class along with all gui components
+            config_location,
+            on_exit=lambda: self.shutdown(),
+            on_user_message=self.on_user_message,
+            on_assistant_message=lambda: self.sprite.set_state('walking'),
+        )
+
+        if self.icon_location:
+            self.gui_backend.setWindowIcon(QIcon(self.icon_location))
+        screen_size = self.gui_backend.primaryScreen().size()
+        screen_size = (screen_size.width(), screen_size.height())
+
+        self.sprite = Sprite(
+            screen_size=self.screen_size,
+            sprite_sheet_location=self.sprite_sheet_location,
+            on_clicked=lambda _: self.on_sprite_clicked(),
+        )
+
+    def initialize_sensors(self):
+        self.shortcut_manager = ShortcutManager()
+        self.shortcut_manager.register_shortcut(
+            'Ctrl+Shift+A',
+            lambda: self.listen_prompt(),
+        )
+        self.microphone = Microphone()
+
     def load_config(self, config_location: Path | str) -> LanguageModelConfig:
         config_location = Path(config_location)
         if not config_location.is_file():
@@ -110,40 +141,9 @@ class App:
         assistant_response_future.add_done_callback(process_response)
         assistant_response_future.add_done_callback(save_state)
 
-    def initialize_gui(self, config_location: Path | str):
-        config_location = Path(config_location)
-        self.gui_backend = QApplication(sys.argv)
-        qscreen_size = self.gui_backend.primaryScreen().size()
-        self.screen_size = (qscreen_size.width(), qscreen_size.height())
-        self.chat_window_controller = ChatWindowController(  # this must be inserted in a frontend (ui) class along with all gui components
-            config_location,
-            on_exit=lambda: self.shutdown(),
-            on_user_message=self.on_user_message,
-            on_assistant_message=lambda: self.sprite.set_state('walking'),
-        )
-
-        if self.icon_location:
-            self.gui_backend.setWindowIcon(QIcon(self.icon_location))
-        screen_size = self.gui_backend.primaryScreen().size()
-        screen_size = (screen_size.width(), screen_size.height())
-
-        self.sprite = Sprite(
-            screen_size=self.screen_size,
-            sprite_sheet_location=self.sprite_sheet_location,
-            on_clicked=lambda _: self.on_sprite_clicked(),
-        )
-
     def on_user_message(self, prompt: str | BytesIO):
         self.sprite.set_state('thinking')
         self.prompt_assistant(prompt)
-
-    def initialize_sensors(self):
-        self.shortcut_manager = ShortcutManager()
-        self.shortcut_manager.register_shortcut(
-            'Ctrl+Shift+A',
-            lambda: self.listen_prompt(),
-        )
-        self.microphone = Microphone()
 
     def on_sprite_clicked(self):
         self.chat_window_controller.show()
