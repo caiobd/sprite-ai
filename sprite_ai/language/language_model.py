@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from langchain.chains import LLMChain
-from llama_cpp import suppress_stdout_stderr
 
 
 class LanguageModel:
@@ -30,8 +29,7 @@ class LanguageModel:
     def load_memory(self, memory_file_location: str | Path):
         memory_file_location = Path(memory_file_location)
         with memory_file_location.open('rb') as memory_file:
-            with suppress_stdout_stderr():
-                memory = pickle.load(memory_file)
+            memory = pickle.load(memory_file)
         self.llm_chain.memory = memory
 
     def save_memory(self, memory_file_location: str | Path):
