@@ -6,7 +6,6 @@ from langchain.llms.llamacpp import LlamaCpp
 from langchain.llms.ollama import Ollama
 from langchain.llms.openai import OpenAI
 from langchain.llms.together import Together
-from llama_cpp import suppress_stdout_stderr
 
 from sprite_ai.constants import APP_NAME
 from sprite_ai.utils.download import download_file
@@ -39,15 +38,14 @@ class LLMFactory:
         model_location = self._get_model_location(model_name)
         if not os.path.isfile(model_location):
             download_file(url, model_location)
-        with suppress_stdout_stderr():
-            llm = LlamaCpp(
-                model_path=model_location,
-                n_ctx=context_size,
-                # n_gpu_layers=40,
-                temperature=temperature,
-                echo=False,
-                stop=stop_strings,
-            )  # type: ignore
+        llm = LlamaCpp(
+            model_path=model_location,
+            n_ctx=context_size,
+            # n_gpu_layers=40,
+            temperature=temperature,
+            echo=False,
+            stop=stop_strings,
+        )  # type: ignore
         return llm
 
     def build(
