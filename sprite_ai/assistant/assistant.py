@@ -1,18 +1,20 @@
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from loguru import logger
 from sprite_ai.audio.transcriber import Transcriber
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
-from sprite_ai.language.language_model import LanguageModel
 from sprite_ai.language.language_model_config import LanguageModelConfig
 
 
 class Assistant:
-    def __init__(self, lm_config: LanguageModelConfig) -> None:
+    def __init__(
+        self, lm_config: LanguageModelConfig, on_transcription: Callable
+    ) -> None:
         self.transcriber = Transcriber()
         self.language_model = LanguageModelFactory().build(lm_config)
+        self.on_transcription = on_transcription
 
     def foward(self, user_request: BytesIO | str) -> str:
         """Processes user request
@@ -30,6 +32,7 @@ class Assistant:
 
         if isinstance(user_request, BytesIO):
             user_request = self.transcriber(user_request)
+            self.on_transcription(user_request)
 
         logger.info('[STARTED] Assistant inference')
 

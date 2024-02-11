@@ -1,4 +1,5 @@
 import audioop
+from io import BytesIO
 import time
 import wave
 from loguru import logger
@@ -45,12 +46,11 @@ class Microphone:
 
     def record(
         self,
-        file_path,
         max_duration=60,
         max_silence_seconds=2,
         patience=20,
         silence_threshold=-1,
-    ):
+    ) -> BytesIO:
         logger.info('[STARTED] Microfone recording')
 
         stream = self._pyaudio.open(
@@ -90,11 +90,15 @@ class Microphone:
         stream.close()
 
         sample_size = self._pyaudio.get_sample_size(self.format)
-        wf = wave.open(file_path, 'wb')
+        bytesio = BytesIO()
+        wf = wave.open(bytesio, 'wb')
         wf.setnchannels(self.channels)
         wf.setsampwidth(sample_size)
         wf.setframerate(self.rate)
         wf.writeframes(b''.join(frames))
         wf.close()
+        bytesio.seek(0)
 
         logger.info('[ENDED] Microfone recording')
+
+        return bytesio

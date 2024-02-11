@@ -14,7 +14,6 @@ import typer
 import yaml
 from loguru import logger
 
-# from plyer import notification
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from sprite_ai.assistant.assistant import Assistant
@@ -23,7 +22,7 @@ from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
 from sprite_ai.language.chat_message import ChatMessage
 from sprite_ai.language.language_model_config import LanguageModelConfig
-from sprite_ai.audio.stt import STT
+from sprite_ai.sensors.microphone import Microphone
 from sprite_ai.ui.shortcut import ShortcutManager
 from sprite_ai.constants import APP_NAME
 
@@ -58,7 +57,9 @@ class App:
 
         self.setup_logging(log_level)
         lm_config = self.load_config(self.config_location)
-        self.assistant: Assistant = Assistant(lm_config)
+        self.assistant = Assistant(
+            lm_config, on_transcription=self.on_transcription
+        )
         self.initialize_gui(self.config_location)
         self.initialize_sensors()
         self._pool = ThreadPoolExecutor()
@@ -137,26 +138,26 @@ class App:
         self.prompt_assistant(prompt)
 
     def initialize_sensors(self):
-        shortcut_manager = ShortcutManager()
-        shortcut_manager.register_shortcut(
+        self.shortcut_manager = ShortcutManager()
+        self.shortcut_manager.register_shortcut(
             'Ctrl+Shift+A',
             lambda: self.listen_prompt(),
         )
+        self.microphone = Microphone()
 
     def on_sprite_clicked(self):
         self.chat_window_controller.show()
 
-    def get_audio_prompt(self) -> str:
-        stt = STT()
-        transcription = stt.listen()
-        return transcription
+    def on_transcription(self, transcription: str):
+        message = ChatMessage(
+            sender='user', content=transcription, timestamp=time.time()
+        )
+        self.chat_window_controller.send_message(message)
 
     def listen_prompt(self):
-        prompt = self.get_audio_prompt()
-        message = ChatMessage(
-            sender='user', content=prompt, timestamp=time.time()
-        )
-        self.chat_window_controller.process_user_message(message)
+        silence_threshold = self.microphone.calibrate(0.3)
+        recording = self.microphone.record(silence_threshold=silence_threshold)
+        self.on_user_message(recording)
 
     def run(self):
         try:
