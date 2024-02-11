@@ -21,7 +21,6 @@ from sprite_ai.assistant.assistant import Assistant
 
 from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
-from sprite_ai.core.world import World
 from sprite_ai.language.chat_message import ChatMessage
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.audio.stt import STT
@@ -112,8 +111,9 @@ class App:
 
     def initialize_gui(self, config_location: Path | str):
         config_location = Path(config_location)
-        self.world = World((3840, 2160))
         self.gui_backend = QApplication(sys.argv)
+        qscreen_size = self.gui_backend.primaryScreen().size()
+        self.screen_size = (qscreen_size.width(), qscreen_size.height())
         self.chat_window_controller = ChatWindowController(  # this must be inserted in a frontend (ui) class along with all gui components
             config_location,
             on_exit=lambda: self.shutdown(),
@@ -127,7 +127,7 @@ class App:
         screen_size = (screen_size.width(), screen_size.height())
 
         self.sprite = Sprite(
-            world=self.world,
+            screen_size=self.screen_size,
             sprite_sheet_location=self.sprite_sheet_location,
             on_clicked=lambda _: self.on_sprite_clicked(),
         )

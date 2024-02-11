@@ -2,7 +2,6 @@ from pathlib import Path
 from threading import Timer
 from typing import Callable
 from sprite_ai.core.sprite_behaviour import SpriteBehaviour
-from sprite_ai.core.world import World
 from sprite_ai.default_animations import ANIMATIONS
 from sprite_ai.default_states import POSSIBLE_STATES
 from sprite_ai.gui.sprite_gui import SpriteGui
@@ -14,21 +13,20 @@ from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 class Sprite:
     def __init__(
         self,
-        world: World,
+        screen_size: tuple[int, int],
         sprite_sheet_location: str | Path,
         on_clicked: Callable,
         icon_location: str | Path = '',
     ) -> None:
         self.sprite_gui = self._build_gui(
-            sprite_sheet_location, world.world_size, on_clicked, icon_location
+            sprite_sheet_location, screen_size, on_clicked, icon_location
         )
         self.sprite_behaviour = SpriteBehaviour(
             possible_states=POSSIBLE_STATES, first_state='appearing'
         )
-        self.world = world
-        width, height = world.world_size
+        width, height = screen_size
         self.current_position = Coordinate(width // 2, height)
-        self.movement_factory = MovementFactory(world.world_size)
+        self.movement_factory = MovementFactory(screen_size)
         self.change_state_timer: None | Timer = None
         self.animation = None
         self._update_state()
