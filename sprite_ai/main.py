@@ -1,153 +1,184 @@
 from __future__ import annotations
+from concurrent.futures import Future, ThreadPoolExecutor
+from io import BytesIO
 
 import os
+from pathlib import Path
 import shutil
 import sys
 from importlib import resources
+import time
 
 import platformdirs
 import typer
 import yaml
 from loguru import logger
-from plyer import notification
-from plyer.utils import platform
+
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
+from sprite_ai.assistant.assistant import Assistant
 
 from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
-from sprite_ai.core.sprite_behaviour import SpriteBehaviour
-from sprite_ai.core.world import World
-from sprite_ai.default_animations import ANIMATIONS
-from sprite_ai.default_states import POSSIBLE_STATES
-from sprite_ai.gui.sprite_gui import SpriteGui
-from sprite_ai.language.languaga_model_factory import LanguageModelFactory
+from sprite_ai.language.chat_message import ChatMessage
 from sprite_ai.language.language_model_config import LanguageModelConfig
-from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
-from sprite_ai.ui.chat_window import ChatWindow
-
-APP_NAME = 'sprite-ai'
-ICON_EXTENTION = icon_extension = 'ico' if platform == 'win' else 'png'
-ICON_FILE = str(
-    resources.path('sprite_ai.resources.icons', f'icon.{ICON_EXTENTION}')
-)
-LOG_DIR = platformdirs.user_log_path(
-    appname=APP_NAME,
-    appauthor=None,
-    version=None,
-    ensure_exists=True,
-)
-LOG_FILE = LOG_DIR / 'events.log'
+from sprite_ai.sensors.microphone import Microphone
+from sprite_ai.ui.shortcut import ShortcutManager
+from sprite_ai.constants import APP_NAME
 
 
-def on_sprite_clicked(world: World, chat_window: ChatWindow):
-    chat_window.show()
+class App:
+    def __init__(self, app_name: str, log_level: str = 'INFO'):
+        self.sprite_sheet_location = str(
+            resources.path('sprite_ai.resources.sprites', 'fred.png')
+        )
+        self.icon_location = str(
+            resources.path('sprite_ai.resources.icons', 'carboardbox_open.png')
+        )
 
+        self.log_dir = platformdirs.user_log_path(
+            appname=app_name,
+            appauthor=None,
+            version=None,
+            ensure_exists=True,
+        )
+        self.user_data_dir = platformdirs.user_data_path(
+            appname=app_name,
+            appauthor=None,
+            version=None,
+            roaming=False,
+            ensure_exists=True,
+        )
+        self.persistence_location = self.user_data_dir / 'state'
+        self.config_location = self.user_data_dir / 'config.yaml'
+        self.chat_state_location = self.persistence_location / 'state.yml'
+        self.assistant_state_location = self.persistence_location / 'state.mem'
+        self.persistence_location.mkdir(parents=True, exist_ok=True)
 
-def on_notification(world: World, message: str):
-    title = APP_NAME
+        self.setup_logging(log_level)
+        lm_config = self.load_config(self.config_location)
+        self.assistant = Assistant(
+            lm_config, on_transcription=self.on_transcription
+        )
+        self.initialize_gui(self.config_location)
+        self.initialize_sensors()
+        self._pool = ThreadPoolExecutor()
 
-    notification.notify(
-        title=title,
-        message=message,
-        app_name=APP_NAME,
-        app_icon=ICON_FILE,
-    )
-    world.event_manager.publish('ui.sprite.state', 'jumping_idle')
+    def setup_logging(self, log_level='INFO'):
+        log_location = self.log_dir / 'events.log'
+        logger.remove()
+        logger.add(sys.stdout, level=log_level)
+        logger.add(log_location, level=log_level)
 
+    def initialize_gui(self, config_location: Path | str):
+        config_location = Path(config_location)
+        self.gui_backend = QApplication(sys.argv)
+        qscreen_size = self.gui_backend.primaryScreen().size()
+        self.screen_size = (qscreen_size.width(), qscreen_size.height())
+        self.chat_window_controller = ChatWindowController(  # this must be inserted in a frontend (ui) class along with all gui components
+            config_location,
+            on_exit=lambda: self.shutdown(),
+            on_user_message=self.on_user_message,
+            on_assistant_message=lambda: self.sprite.set_state('walking'),
+        )
 
-def on_canceled(world: World):
-    world.event_manager.publish('ui.sprite.state', 'walking')
+        if self.icon_location:
+            self.gui_backend.setWindowIcon(QIcon(self.icon_location))
+        screen_size = self.gui_backend.primaryScreen().size()
+        screen_size = (screen_size.width(), screen_size.height())
 
+        self.sprite = Sprite(
+            screen_size=self.screen_size,
+            sprite_sheet_location=self.sprite_sheet_location,
+            on_clicked=lambda _: self.on_sprite_clicked(),
+        )
 
-def setup_logging():
-    logger.remove()
-    logger.add(sys.stdout, level='DEBUG')
-    logger.add(LOG_FILE, level='DEBUG')
+    def initialize_sensors(self):
+        self.shortcut_manager = ShortcutManager()
+        self.shortcut_manager.register_shortcut(
+            'Ctrl+Shift+A',
+            lambda: self.listen_prompt(),
+        )
+        self.microphone = Microphone()
 
+    def load_config(self, config_location: Path | str) -> LanguageModelConfig:
+        config_location = Path(config_location)
+        if not config_location.is_file():
+            default_config_location = resources.path(
+                'sprite_ai.resources', 'default_config.yaml'
+            )
+            shutil.copy2(default_config_location, config_location)
 
-def shutdown(app: QApplication):
-    app.closeAllWindows()
-    app.exit(0)
-    os._exit(0)
+        with self.config_location.open(encoding='UTF-8') as config_file:
+            model_config_dump = yaml.safe_load(config_file)
+            model_config = LanguageModelConfig(**model_config_dump)
+
+        return model_config
+
+    def save_state(self):
+        self.chat_window_controller.save_state(self.chat_state_location)
+        self.assistant.save_state(self.assistant_state_location)
+
+    def load_state(self):
+        self.chat_window_controller.load_state(self.chat_state_location)
+        self.assistant.load_state(self.assistant_state_location)
+
+    def prompt_assistant(self, prompt: str | BytesIO):
+        assistant_response_future = self._pool.submit(self.assistant, prompt)
+
+        def process_response(response_future: Future[str]):
+            message = ChatMessage(
+                sender='ai',
+                content=response_future.result(),
+                timestamp=time.time(),
+            )
+            self.chat_window_controller.process_assistant_message(message)
+
+        def save_state(response_future: Future[str]):
+            response_future.result()
+            self.save_state()
+
+        assistant_response_future.add_done_callback(process_response)
+        assistant_response_future.add_done_callback(save_state)
+
+    def on_user_message(self, prompt: str | BytesIO):
+        self.sprite.set_state('thinking')
+        self.prompt_assistant(prompt)
+
+    def on_sprite_clicked(self):
+        self.chat_window_controller.show()
+
+    def on_transcription(self, transcription: str):
+        message = ChatMessage(
+            sender='user', content=transcription, timestamp=time.time()
+        )
+        self.chat_window_controller.send_message(message)
+
+    def listen_prompt(self):
+        silence_threshold = self.microphone.calibrate(0.3)
+        recording = self.microphone.record(silence_threshold=silence_threshold)
+        self.on_user_message(recording)
+
+    def run(self):
+        try:
+            self.load_state()
+        except FileNotFoundError as e:
+            logger.error(f'Failed to load state, {e}')
+
+        try:
+            self.sprite.run()
+            self.gui_backend.exec()
+        except KeyboardInterrupt as e:
+            logger.info('exiting...')
+            os._exit(0)
+
+    def shutdown(self):
+        os._exit(0)
 
 
 def main():
-    user_data_dir = platformdirs.user_data_path(
-        appname=APP_NAME,
-        appauthor=None,
-        version=None,
-        roaming=False,
-        ensure_exists=True,
-    )
-    persistence_location = str(user_data_dir / 'state')
-    sprite_sheet_location = str(
-        resources.path('sprite_ai.resources.sprites', 'fred.png')
-    )
-    icon_location = str(
-        resources.path('sprite_ai.resources.icons', 'carboardbox_open.png')
-    )
-
-    sprite_behaviour = SpriteBehaviour(
-        possible_states=POSSIBLE_STATES, first_state='appearing'
-    )
-    sprite_sheet_metadata = SpriteSheetMetadata(
-        sprite_sheet_location, 5888, 128, 46, 1
-    )
-    world = World((3840, 2160))
-
-    config_location = user_data_dir / 'config.yaml'
-
-    if not config_location.is_file():
-        default_config_location = resources.path(
-            'sprite_ai.resources', 'default_config.yaml'
-        )
-        shutil.copy2(default_config_location, config_location)
-
-    with config_location.open(encoding='UTF-8') as config_file:
-        model_config_dump = yaml.safe_load(config_file)
-        model_config = LanguageModelConfig(**model_config_dump)
-
-    language_model = LanguageModelFactory().build(model_config)
-
-    app = QApplication(sys.argv)
-
-    chat_window = ChatWindow(world.event_manager, config_location)
-    chat_window_controller = ChatWindowController(
-        world.event_manager, language_model, persistence_location
-    )
-
-    try:
-        chat_window_controller.load_state()
-    except FileNotFoundError as e:
-        logger.error(f'Failed to load state, {e}')
-
-    if icon_location:
-        app.setWindowIcon(QIcon(icon_location))
-    screen_size = app.primaryScreen().size()
-    screen_size = (screen_size.width(), screen_size.height())
-
-    sprite_gui = SpriteGui(
-        screen_size,
-        sprite_sheet_metadata,
-        ANIMATIONS,
-        on_clicked=lambda event: on_sprite_clicked(world, chat_window),
-        icon_location=icon_location,
-    )
-
-    sprite = Sprite(
-        sprite_gui=sprite_gui, sprite_behaviour=sprite_behaviour, world=world
-    )
-
-    world.event_manager.subscribe('notification', on_notification)
-    world.event_manager.subscribe('exit', lambda _: shutdown(app))
-
-    try:
-        sprite.run()
-        app.exec()
-    except KeyboardInterrupt as e:
-        logger.info('exiting...')
-        os._exit(0)
+    app = App(APP_NAME, log_level='DEBUG')
+    app.run()
 
 
 if __name__ == '__main__':

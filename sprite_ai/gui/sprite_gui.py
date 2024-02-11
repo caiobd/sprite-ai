@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 import threading
 from typing import Any, Callable
@@ -23,8 +24,9 @@ class SpriteGui:
         animations: dict[str, Animation],
         on_position_updated: Callable | None = None,
         on_clicked: Callable | None = None,
-        icon_location: str = '',
+        icon_location: str | Path = '',
     ):
+        self.icon_location = icon_location
         self.screen_size = screen_size
         self.sprite_widget = SpriteWidgetQt()
         sprite_sheet_image = QPixmap(sprite_sheet_metadata.path)

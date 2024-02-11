@@ -1,4 +1,5 @@
 from __future__ import annotations
+from pathlib import Path
 
 import pickle
 from dataclasses import dataclass
@@ -12,7 +13,7 @@ class LanguageModel:
     def __init__(self, llm_chain: LLMChain):
         self.llm_chain = llm_chain
 
-    def awnser(self, prompt: str) -> str:
+    def foward(self, prompt: str) -> str:
         if self.llm_chain:
             awnser = self.llm_chain.predict(user_input=prompt)
         else:
@@ -20,17 +21,22 @@ class LanguageModel:
 
         return awnser
 
+    def __call__(self, prompt: str) -> str:
+        return self.foward(prompt)
+
     def messages(self):
         return self.llm_chain.memory.chat_memory.messages
 
-    def load_memory(self, memory_file_location: str):
-        with open(memory_file_location, 'rb') as memory_file:
+    def load_memory(self, memory_file_location: str | Path):
+        memory_file_location = Path(memory_file_location)
+        with memory_file_location.open('rb') as memory_file:
             with suppress_stdout_stderr():
                 memory = pickle.load(memory_file)
         self.llm_chain.memory = memory
 
-    def save_memory(self, memory_file_location: str):
-        with open(memory_file_location, 'wb') as memory_file:
+    def save_memory(self, memory_file_location: str | Path):
+        memory_file_location = Path(memory_file_location)
+        with memory_file_location.open('wb') as memory_file:
             pickle.dump(self.llm_chain.memory, memory_file)
 
     def clear_memory(self):
