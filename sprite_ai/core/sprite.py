@@ -29,7 +29,6 @@ class Sprite:
         width, height = world.world_size
         self.current_position = Coordinate(width // 2, height)
         self.movement_factory = MovementFactory(world.world_size)
-        self.sprite_gui.on_position_updated = self.on_position_update
         self.change_state_timer: None | Timer = None
         self.animation = None
         self._update_state()
@@ -50,6 +49,7 @@ class Sprite:
             ANIMATIONS,
             icon_location=icon_location,
             on_clicked=on_clicked,
+            on_position_updated=self.on_position_update,
         )
         return sprite_gui
 
