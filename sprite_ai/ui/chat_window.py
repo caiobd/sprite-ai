@@ -4,6 +4,7 @@ from typing import Callable
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QEvent, Qt, pyqtSignal, pyqtSlot
+from sprite_ai.language.chat_message import ChatMessage
 
 from sprite_ai.ui.chat_window_ui import Ui_MainWindow
 from sprite_ai.ui.message_delegate import MessageDelegate
@@ -72,11 +73,11 @@ class ChatWindow(QtWidgets.QMainWindow):
     @pyqtSlot()
     def send_user_message(self):
         user_message = self.ui.te_chatinput.toPlainText()
-        message = {
-            'sender': 'user',
-            'timestamp': time(),
-            'content': user_message,
-        }
+        message = ChatMessage(
+            sender='user',
+            timestamp=time(),
+            content=user_message,
+        )
         self.on_user_message(message)
         self.ui.te_chatinput.clear()
 

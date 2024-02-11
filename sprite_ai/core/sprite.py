@@ -30,7 +30,6 @@ class Sprite:
         self.current_position = Coordinate(width // 2, height)
         self.movement_factory = MovementFactory(world.world_size)
         self.sprite_gui.on_position_updated = self.on_position_update
-        self.world.event_manager.subscribe('ui.sprite.state', self.set_state)
         self.change_state_timer: None | Timer = None
         self.animation = None
         self._update_state()

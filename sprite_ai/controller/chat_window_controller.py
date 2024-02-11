@@ -1,4 +1,4 @@
-from concurrent.futures import CancelledError, Future, ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from time import time
 from typing import Callable
@@ -6,44 +6,39 @@ from typing import Callable
 from loguru import logger
 import texteditor
 
-from sprite_ai.event_manager import EventManager
 from sprite_ai.language.chat_message import ChatMessage
 from sprite_ai.language.chat_session import ChatSession
-from sprite_ai.language.language_model import LanguageModel
 from sprite_ai.ui.chat_window import ChatWindow
 
 
 class ChatWindowController:
     def __init__(
         self,
-        event_manager: EventManager,
-        language_model: LanguageModel,
-        persistence_location: str,
         settings_location: str | Path,
         on_exit: Callable,
         on_user_message: Callable,
+        on_assistant_message: Callable,
     ) -> None:
-
-        self.event_manager = event_manager
         self.chat_window = ChatWindow(
             on_clear_chat=self.clear_chat_session,
             on_user_message=self.process_user_message,
             on_open_settings=self.open_settings,
             on_exit=on_exit,
         )
-        self.language_model = language_model
-        self.persistence_location = persistence_location
         self.settings_location = Path(settings_location)
 
-        self.chat_session = ChatSession(language_model)
+        self.chat_session = ChatSession()
         self._pool = ThreadPoolExecutor()
         self.on_user_message = on_user_message
+        self.on_assistant_message = on_assistant_message
 
-    def load_state(self):
+    def load_state(self, state_location: str | Path):
         try:
-            self.chat_session.load_state(self.persistence_location)
+            self.chat_session.load_state(state_location)
             for chat_message in self.chat_session.messages:
-                self.send_message(chat_message)
+                self.chat_window.message_recived.emit(
+                    chat_message.model_dump()
+                )
 
             logger.info('loaded previous state')
         except FileNotFoundError as e:
@@ -51,38 +46,25 @@ class ChatWindowController:
                 'No previous state found at persistence location, skipped loading state'
             )
 
-    def send_message(self, message: ChatMessage):
-        self.chat_window.message_recived.emit(message.model_dump())
-
-    def save_state(self):
-        self.chat_session.save_state(self.persistence_location)
+    def save_state(self, state_location: str | Path):
+        self.chat_session.save_state(state_location)
         logger.info('Saved curent state')
+
+    def send_message(self, message: ChatMessage):
+        self.chat_session.add_message(message)
+        self.chat_window.message_recived.emit(message.model_dump())
 
     def clear_chat_session(self):
         self.chat_session.clear_state()
         logger.info('Cleared curent state')
 
-    def process_user_message(self, message: dict):
-        chat_message = ChatMessage(**message)
-
-        self.send_message(chat_message)
-        self.chat_session.send_message(
-            chat_message.content, self._publish_awnser
-        )
-        self.on_user_message()
-
-    def _publish_awnser(self, awnser_future: Future[str]):
-        try:
-            awnser = awnser_future.result()
-        except CancelledError | TimeoutError as e:
-            logger.error('Failed to aquire language model awnser', e)
-            return
-        finally:
-            self.event_manager.publish('ui.sprite.state', 'jumping_idle')
-
-        message = ChatMessage(sender='ai', content=awnser, timestamp=time())
+    def process_user_message(self, message: ChatMessage):
         self.send_message(message)
-        self.save_state()
+        self.on_user_message(message.content)
+
+    def process_assistant_message(self, message: ChatMessage):
+        self.send_message(message)
+        self.on_assistant_message()
 
     def open_settings(self):
         content_future = self._pool.submit(

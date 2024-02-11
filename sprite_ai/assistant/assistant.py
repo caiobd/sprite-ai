@@ -1,6 +1,8 @@
 from io import BytesIO
 from pathlib import Path
 from typing import Any
+
+from loguru import logger
 from sprite_ai.audio.transcriber import Transcriber
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model import LanguageModel
@@ -19,7 +21,7 @@ class Assistant:
             user_request (BytesIO | str): Can be an audio BytesIO or an input string,
             audios will be converted to text automatically.
         """
-        if not isinstance(user_request, str) or not isinstance(
+        if not isinstance(user_request, str) and not isinstance(
             user_request, BytesIO
         ):
             raise TypeError(
@@ -29,7 +31,11 @@ class Assistant:
         if isinstance(user_request, BytesIO):
             user_request = self.transcriber(user_request)
 
+        logger.info('[STARTED] Assistant inference')
+
         awnser = self.language_model(user_request)
+
+        logger.info('[FINISHED] Assistant inference')
 
         return awnser
 
@@ -40,4 +46,4 @@ class Assistant:
         self.language_model.load_memory(load_location)
 
     def __call__(self, user_request: BytesIO | str) -> str:
-        self.foward(user_request)
+        return self.foward(user_request)
