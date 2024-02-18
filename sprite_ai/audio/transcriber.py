@@ -10,7 +10,7 @@ class Transcriber:
     def __init__(self, model_size='small', device='auto') -> None:
         self.model_size = model_size
         self.model = WhisperModel(
-            self.model_size, device=device, compute_type='float16'
+            self.model_size, device=device, compute_type='default'
         )
 
     def foward(self, audio: BytesIO | str, vad_filter=True) -> str:

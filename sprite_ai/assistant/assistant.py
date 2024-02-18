@@ -12,7 +12,7 @@ class Assistant:
     def __init__(
         self, lm_config: LanguageModelConfig, on_transcription: Callable
     ) -> None:
-        self.transcriber = Transcriber()
+        self.transcriber = Transcriber(device='cpu')
         self.language_model = LanguageModelFactory().build(lm_config)
         self.on_transcription = on_transcription
 

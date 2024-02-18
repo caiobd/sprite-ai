@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sprite-ai"
-version = "1.4.0"
+version = "1.4.1"
 description = "Sprite AI is an AI companion for your desktop"
 authors = ["Caio D <caiobd@protonmail.com>"]
 readme = "README.md"
@@ -23,6 +23,7 @@ texteditor = "^1.4.1"
 faster-whisper = "^0.10.0"
 pyaudio = "^0.2.14"
 pyqtkeybind = "^0.0.9"
+openai = "1.12.0"
 
 [tool.poetry.dev-dependencies]
 
