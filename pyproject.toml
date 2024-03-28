@@ -6,7 +6,7 @@ authors = ["Caio D <caiobd@protonmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.9,<3.12"
 pydantic = "^2.4.2"
 pyyaml = "^6.0.1"
 langchain = "^0.0.327"
@@ -24,6 +24,8 @@ faster-whisper = "^0.10.0"
 pyaudio = "^0.2.14"
 pyqtkeybind = "^0.0.9"
 openai = "1.12.0"
+tts = "^0.22.0"
+sounddevice = "^0.4.6"
 
 [tool.poetry.dev-dependencies]
 

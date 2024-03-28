@@ -1,8 +1,10 @@
 from io import BytesIO
 from pathlib import Path
+import time
 from typing import Any, Callable
 
 from loguru import logger
+from sprite_ai.audio.speaker import Speaker
 from sprite_ai.audio.transcriber import Transcriber
 from sprite_ai.language.languaga_model_factory import LanguageModelFactory
 from sprite_ai.language.language_model_config import LanguageModelConfig
@@ -14,6 +16,7 @@ class Assistant:
     ) -> None:
         self.transcriber = Transcriber(device='cpu')
         self.language_model = LanguageModelFactory().build(lm_config)
+        self.speaker = Speaker('pt', 'prototyping/female_demo_highpitch.wav')
         self.on_transcription = on_transcription
 
     def foward(self, user_request: BytesIO | str) -> str:
@@ -36,9 +39,15 @@ class Assistant:
 
         logger.info('[STARTED] Assistant inference')
 
+        awnser_started = time.time()
         awnser = self.language_model(user_request)
+        awnser_elapsed = time.time() - awnser_started
 
         logger.info('[FINISHED] Assistant inference')
+        logger.info(
+            f'[LanguageModel|Elapsed] Language model generation time {awnser_elapsed}'
+        )
+        self.speaker(awnser)
 
         return awnser
 
