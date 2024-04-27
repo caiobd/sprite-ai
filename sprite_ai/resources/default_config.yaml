@@ -1,6 +1,5 @@
 speaker:
   language: pt
-  voice_reference: resources/voices/default.wav
 
 language_model:
   ai_prefix: GPT4 Correct Assistant
@@ -8,7 +7,7 @@ language_model:
   memory_tokens_limit: 4096
   memory_type: summary_buffer
   model_temperature: 0.7
-  name: ollama/llama3:8b-instruct-q4_K_M 
+  name: local/openchat-3.5-1210.Q4_K_M
   prompt_template: >
     GPT4 Correct User:
     {system_prompt}
@@ -28,6 +27,5 @@ language_model:
     assistant: Você é meaw dono!\n
     user: Qual sua comida favorita?\n
     assistant: Miau! Amo peixe!
-  url: http://localhost:11434
+  url: https://huggingface.co/TheBloke/openchat-3.5-1210-GGUF/resolve/main/openchat-3.5-1210.Q4_K_M.gguf
   user_prefix: GPT4 Correct User
-  api_key: ollama
