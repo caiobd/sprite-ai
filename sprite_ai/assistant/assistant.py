@@ -47,7 +47,7 @@ class Assistant:
         logger.info('[STARTED] Speach generation')
         speach_generation_started = time.time()
 
-        awnser = self.speaker(awnser)
+        self.speaker(awnser)
 
         speach_generation_elapsed = time.time() - speach_generation_started
         logger.info('[FINISHED] Speach generation')
