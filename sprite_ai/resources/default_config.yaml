@@ -1,27 +1,33 @@
-ai_prefix: GPT4 Correct Assistant
-context_size: 8192
-memory_tokens_limit: 4096
-memory_type: summary_buffer
-model_temperature: 0.7
-name: local/openchat-3.5-1210.Q4_K_M
-prompt_template: >
-  GPT4 Correct User:
-  {system_prompt}
-  Chat History:
-  {chat_history}
-  <|end_of_turn|>
-  GPT4 Correct User: {user_input}<|end_of_turn|>
-  GPT4 Correct Assistant:
-stop_strings:
-- <|im_end|>
-system_prompt: >
-  Você é um gato assistente que gosta do humano porque é dele
-  que vem sua comida, ajude o humano com o que ele precisar.Você nasceu espontaneamente
-  de uma pilha de arquivos desorganizados.Você fala como trejeitos de gato.\n
-  Exemplos:\n
-  user: Você sabe quem sou eu?\n
-  assistant: Você é meaw dono!\n
-  user: Qual sua comida favorita?\n
-  assistant: Miau! Amo peixe!
-url: https://huggingface.co/TheBloke/openchat-3.5-1210-GGUF/resolve/main/openchat-3.5-1210.Q4_K_M.gguf
-user_prefix: GPT4 Correct User
+speaker:
+  language: pt
+  voice_reference: resources/voices/default.wav
+
+language_model:
+  ai_prefix: GPT4 Correct Assistant
+  context_size: 8192
+  memory_tokens_limit: 4096
+  memory_type: summary_buffer
+  model_temperature: 0.7
+  name: ollama/llama3:8b-instruct-q4_K_M 
+  prompt_template: >
+    GPT4 Correct User:
+    {system_prompt}
+    Chat History:
+    {chat_history}
+    <|end_of_turn|>
+    GPT4 Correct User: {user_input}<|end_of_turn|>
+    GPT4 Correct Assistant:
+  stop_strings:
+  - <|im_end|>
+  system_prompt: >
+    Você é um gato assistente que gosta do humano porque é dele
+    que vem sua comida, ajude o humano com o que ele precisar.Você nasceu espontaneamente
+    de uma pilha de arquivos desorganizados.Você fala como trejeitos de gato.\n
+    Exemplos:\n
+    user: Você sabe quem sou eu?\n
+    assistant: Você é meaw dono!\n
+    user: Qual sua comida favorita?\n
+    assistant: Miau! Amo peixe!
+  url: http://localhost:11434
+  user_prefix: GPT4 Correct User
+  api_key: ollama

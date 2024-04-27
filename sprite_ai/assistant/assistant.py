@@ -1,23 +1,21 @@
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 import time
 from typing import Any, Callable
 
 from loguru import logger
-from sprite_ai.audio.speaker import Speaker
+from sprite_ai.audio.speach.speaker import Speaker
 from sprite_ai.audio.transcriber import Transcriber
-from sprite_ai.language.languaga_model_factory import LanguageModelFactory
-from sprite_ai.language.language_model_config import LanguageModelConfig
+from sprite_ai.language.language_model import LanguageModel
 
 
+@dataclass
 class Assistant:
-    def __init__(
-        self, lm_config: LanguageModelConfig, on_transcription: Callable
-    ) -> None:
-        self.transcriber = Transcriber(device='cpu')
-        self.language_model = LanguageModelFactory().build(lm_config)
-        self.speaker = Speaker('pt', 'prototyping/female_demo_highpitch.wav')
-        self.on_transcription = on_transcription
+    transcriber: Transcriber
+    language_model: LanguageModel
+    speaker: Speaker
+    on_transcription: Callable | None = None
 
     def foward(self, user_request: BytesIO | str) -> str:
         """Processes user request
@@ -37,17 +35,25 @@ class Assistant:
             user_request = self.transcriber(user_request)
             self.on_transcription(user_request)
 
-        logger.info('[STARTED] Assistant inference')
-
+        logger.info('[STARTED] Language model inference')
         awnser_started = time.time()
-        awnser = self.language_model(user_request)
-        awnser_elapsed = time.time() - awnser_started
 
-        logger.info('[FINISHED] Assistant inference')
+        awnser = self.language_model(user_request)
+
+        awnser_elapsed = time.time() - awnser_started
+        logger.info('[FINISHED] Language model inference')
+        logger.info(f'[LanguageModel | Elapsed Time] {awnser_elapsed}')
+
+        logger.info('[STARTED] Speach generation')
+        speach_generation_started = time.time()
+
+        awnser = self.speaker(awnser)
+
+        speach_generation_elapsed = time.time() - speach_generation_started
+        logger.info('[FINISHED] Speach generation')
         logger.info(
-            f'[LanguageModel|Elapsed] Language model generation time {awnser_elapsed}'
+            f'[SpeachGeneration | Elapsed Time] {speach_generation_elapsed}'
         )
-        self.speaker(awnser)
 
         return awnser
 

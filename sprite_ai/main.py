@@ -16,7 +16,9 @@ from loguru import logger
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
-from sprite_ai.assistant.assistant import Assistant
+
+from sprite_ai.assistant.assistant_config import AssistantConfig
+from sprite_ai.assistant.assistant_factory import AssistantFactory
 
 from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
@@ -56,9 +58,9 @@ class App:
         self.persistence_location.mkdir(parents=True, exist_ok=True)
 
         self.setup_logging(log_level)
-        lm_config = self.load_config(self.config_location)
-        self.assistant = Assistant(
-            lm_config, on_transcription=self.on_transcription
+        assistant_config = self.load_config(self.config_location)
+        self.assistant = AssistantFactory().build(
+            assistant_config, on_transcription=self.on_transcription
         )
         self.initialize_gui(self.config_location)
         self.initialize_sensors()
@@ -110,10 +112,12 @@ class App:
             shutil.copy2(default_config_location, config_location)
 
         with self.config_location.open(encoding='UTF-8') as config_file:
-            model_config_dump = yaml.safe_load(config_file)
-            model_config = LanguageModelConfig(**model_config_dump)
+            assistant_config_dump = yaml.safe_load(config_file)
+            assistant_config = AssistantConfig.model_validate(
+                assistant_config_dump
+            )
 
-        return model_config
+        return assistant_config
 
     def save_state(self):
         self.chat_window_controller.save_state(self.chat_state_location)
@@ -155,7 +159,7 @@ class App:
         self.chat_window_controller.send_message(message)
 
     def listen_prompt(self):
-        silence_threshold = self.microphone.calibrate(0.3)
+        silence_threshold = self.microphone.calibrate(0.7)
         recording = self.microphone.record(silence_threshold=silence_threshold)
         self.on_user_message(recording)
 
