@@ -4,7 +4,7 @@ import platformdirs
 from langchain.llms.base import LLM
 from langchain.llms.llamacpp import LlamaCpp
 from langchain.llms.ollama import Ollama
-from langchain.llms.openai import OpenAI
+from langchain.chat_models.openai import ChatOpenAI
 from langchain.llms.together import Together
 
 from sprite_ai.constants import APP_NAME
@@ -41,7 +41,7 @@ class LLMFactory:
         llm = LlamaCpp(
             model_path=model_location,
             n_ctx=context_size,
-            # n_gpu_layers=40,
+            n_gpu_layers=-1,
             temperature=temperature,
             echo=False,
             stop=stop_strings,
@@ -78,7 +78,7 @@ class LLMFactory:
             )
         elif model_prefix == 'openai':
             url = url if url else None
-            llm = OpenAI(
+            llm = ChatOpenAI(
                 model=model_name,
                 max_tokens=context_size,
                 temperature=temperature,
