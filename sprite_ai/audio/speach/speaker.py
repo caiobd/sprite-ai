@@ -2,7 +2,7 @@ from pathlib import Path
 import time
 from typing import Literal
 import numpy as np
-import torch
+import onnxruntime
 from piper.download import ensure_voice_exists, find_voice, get_voices
 from piper.voice import PiperVoice
 import sounddevice as sd
@@ -18,7 +18,7 @@ class Speaker:
         inference_device: ComputeDevice = None,
     ) -> None:
         if inference_device is None:
-            inference_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            inference_device = 'cuda' if onnxruntime.get_device() == 'GPU' else 'cpu'
         use_cuda = inference_device == 'cuda'
         model_location, config_location = self._fetch_model(variant)
 
