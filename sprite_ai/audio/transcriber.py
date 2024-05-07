@@ -1,17 +1,23 @@
 from io import BytesIO
 import time
-from typing import Any
+from typing import Any, Literal
 
 from faster_whisper import WhisperModel
 from loguru import logger
 
+ComputeDevice = Literal['cpu','cuda']|None
+LanguageCode = str|None
 
 class Transcriber:
-    def __init__(self, model_size='small', device='auto') -> None:
+    def __init__(self, model_size: str='small', language: LanguageCode = None, device: ComputeDevice=None) -> None:
+        if device is None:
+            device = 'auto'
+        
         self.model_size = model_size
         self.model = WhisperModel(
             self.model_size, device=device, compute_type='default'
         )
+        self.language = language
 
     def foward(self, audio: BytesIO | str, vad_filter=True) -> str:
         """Transcribes speach from audio
@@ -25,7 +31,10 @@ class Transcriber:
         """
         start = time.time()
         segments, info = self.model.transcribe(
-            audio, beam_size=5, vad_filter=vad_filter
+            audio, 
+            language=self.language,
+            beam_size=5, 
+            vad_filter=vad_filter
         )
 
         logger.info(

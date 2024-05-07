@@ -12,11 +12,12 @@ class AssistantFactory:
         assistant_config: AssistantConfig,
         on_transcription: Callable | None = None,
     ) -> Assistant:
-        transcriber = Transcriber(device='cpu')
+        language_code = assistant_config.language.language_code
+        transcriber = Transcriber(language=language_code, device='cpu')
         language_model = LanguageModelFactory().build(
             assistant_config.language_model
         )
-        speaker = SpeakerFactory().build(assistant_config.speaker)
+        speaker = SpeakerFactory().build(assistant_config.language)
         assistant = Assistant(
             transcriber,
             language_model,
