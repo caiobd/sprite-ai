@@ -1,7 +1,12 @@
+from pathlib import Path
+from sprite_ai.assistant.language_config import LanguageConfig
 from sprite_ai.audio.speach.speaker import Speaker
-from sprite_ai.audio.speach.speaker_config import SpeakerConfig
 
 
 class SpeakerFactory:
-    def build(self, speaker_config: SpeakerConfig) -> Speaker:
-        return Speaker(**speaker_config.model_dump())
+    def build(self, language_config: LanguageConfig, voices_dir: str|Path) -> Speaker:
+        return Speaker(
+            language_config.variant,
+            language_config.speaker,
+            download_dir=voices_dir
+        )

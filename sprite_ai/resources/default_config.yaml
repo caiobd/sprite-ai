@@ -1,5 +1,6 @@
-speaker:
-  language: pt
+language:
+  variant: pt_BR-faber-medium
+  speaker: 0
 
 language_model:
   ai_prefix: GPT4 Correct Assistant
