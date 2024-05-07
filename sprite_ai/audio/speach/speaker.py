@@ -16,11 +16,12 @@ class Speaker:
         variant: str,
         speaker_id: int=0,
         inference_device: ComputeDevice = None,
+        download_dir: str|Path = '.voices'
     ) -> None:
         if inference_device is None:
             inference_device = 'cuda' if onnxruntime.get_device() == 'GPU' else 'cpu'
         use_cuda = inference_device == 'cuda'
-        model_location, config_location = self._fetch_model(variant)
+        model_location, config_location = self._fetch_model(variant, download_dir)
 
         self.model: PiperVoice = PiperVoice.load(model_location, config_location, use_cuda)
 
@@ -28,8 +29,7 @@ class Speaker:
             speaker_id = None
         self.speaker_id = speaker_id
     
-    def _fetch_model(self, variant: str) -> tuple[Path, Path]:
-        download_dir = './voices/'
+    def _fetch_model(self, variant: str, download_dir: str|Path) -> tuple[Path, Path]:
         Path(download_dir).mkdir(exist_ok=True)
         voices_info = get_voices(download_dir, update_voices=True)
         ensure_voice_exists(variant, [download_dir], download_dir, voices_info)
@@ -48,7 +48,7 @@ class Speaker:
         for frame in frames_stream:
             if first:
                 logger.info(
-                    f'[Speaker|ELAPSED] Time to first speach generation {elapsed_time:.2f}'
+                    f'[Speaker|ELAPSED] Time to first speach frame generation {elapsed_time:.2f}'
                 )
                 first = False
 
