@@ -17,12 +17,12 @@ Storage     |   6GB
 
 
 ## Dependencies
-- [Python](https://www.python.org/) >= 3.8
+- [Python](https://www.python.org/) >= 3.9
 - [pipx](https://pipx.pypa.io/stable/) [Optional]
 
 
 ## Installation
-1. [Install Python](https://wiki.python.org/moin/BeginnersGuide/Download) >= 3.8
+1. [Install Python](https://wiki.python.org/moin/BeginnersGuide/Download) >= 3.9
 1. [Install pipx](https://pypa.github.io/pipx/#install-pipx) [Optional dependency]
 1. Install Sprite AI  
     a. Use pip [default]
