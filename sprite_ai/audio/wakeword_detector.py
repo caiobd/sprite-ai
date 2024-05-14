@@ -86,7 +86,7 @@ class WakewordDetector:
 
 if __name__ == '__main__':
     wakeword_alert_location = str(
-        resources.path('sprite_ai.resources.sounds', 'listening_alert_01.wac')
+        resources.path('sprite_ai.resources.sounds', 'listening_alert_01.wav')
     )
     wakeword_model_location = str(
         resources.path('sprite_ai.resources.wakewords', 'sprite.onnx')
