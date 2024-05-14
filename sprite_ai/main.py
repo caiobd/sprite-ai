@@ -20,6 +20,8 @@ from PyQt5.QtWidgets import QApplication
 from sprite_ai.assistant.assistant_config import AssistantConfig
 from sprite_ai.assistant.assistant_factory import AssistantFactory
 
+from sprite_ai.audio.sound import Sound
+from sprite_ai.audio.wakeword_detector import WakewordDetector
 from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
 from sprite_ai.language.chat_message import ChatMessage
@@ -37,6 +39,16 @@ class App:
         self.icon_location = str(
             resources.path('sprite_ai.resources.icons', 'carboardbox_open.png')
         )
+
+        self.listening_sound_location = str(
+            resources.path('sprite_ai.resources.sounds', 'listening_alert_01.wav')
+        )
+        self.listening_sound = Sound(self.listening_sound_location)
+
+        self.wakeword_model_location = str(
+            resources.path('sprite_ai.resources.wakewords', 'sprite.onnx')
+        )
+
 
         self.log_dir = platformdirs.user_log_path(
             appname=app_name,
@@ -102,6 +114,10 @@ class App:
             lambda: self.listen_prompt(),
         )
         self.microphone = Microphone()
+        self.wakeword_detector = WakewordDetector(
+            self.wakeword_model_location, self.listen_prompt
+        )
+        self.wakeword_detector.start()
 
     def load_config(self, config_location: Path | str) -> LanguageModelConfig:
         config_location = Path(config_location)
@@ -142,8 +158,12 @@ class App:
             response_future.result()
             self.save_state()
 
+        def listen_for_wakeword(response_future: Future[str]):
+            self.wakeword_detector.start()
+
         assistant_response_future.add_done_callback(process_response)
         assistant_response_future.add_done_callback(save_state)
+        assistant_response_future.add_done_callback(listen_for_wakeword)
 
     def on_user_message(self, prompt: str | BytesIO):
         self.sprite.set_state('thinking')
@@ -159,7 +179,9 @@ class App:
         self.chat_window_controller.send_message(message)
 
     def listen_prompt(self):
+        self.wakeword_detector.stop()
         silence_threshold = self.microphone.calibrate(0.7)
+        self.listening_sound.play(blocking=True)
         recording = self.microphone.record(silence_threshold=silence_threshold)
         self.on_user_message(recording)
 
@@ -175,6 +197,9 @@ class App:
         except KeyboardInterrupt as e:
             logger.info('exiting...')
             os._exit(0)
+        finally:
+            self.wakeword_detector.stop()
+            self.wakeword_detector.shutdown()
 
     def shutdown(self):
         os._exit(0)

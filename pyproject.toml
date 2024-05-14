@@ -26,6 +26,8 @@ pyqtkeybind = "^0.0.9"
 openai = "1.12.0"
 sounddevice = "^0.4.6"
 piper-tts = "^1.2.0"
+openwakeword = "^0.6.0"
+soundfile = "^0.12.1"
 
 [tool.poetry.dev-dependencies]
 
