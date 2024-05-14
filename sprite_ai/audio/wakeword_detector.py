@@ -82,6 +82,11 @@ class WakewordDetector:
     def stop(self):
         self._detection_active.clear()
         logger.info('[ENDED] Listening for wakeword')
+    
+    def shutdown(self):
+        self._detection_active.clear()
+        self.stream.stop_stream()
+        self.stream.close()
 
 
 if __name__ == '__main__':
