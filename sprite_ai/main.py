@@ -119,7 +119,7 @@ class App:
         )
         self.wakeword_detector.start()
 
-    def load_config(self, config_location: Path | str) -> LanguageModelConfig:
+    def load_config(self, config_location: Path | str) -> AssistantConfig:
         config_location = Path(config_location)
         if not config_location.is_file():
             default_config_location = resources.path(
