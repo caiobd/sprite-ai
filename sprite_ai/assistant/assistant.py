@@ -17,7 +17,9 @@ class Assistant:
     speaker: Speaker
     on_transcription: Callable | None = None
 
-    def foward(self, user_request: BytesIO | str) -> str:
+    def foward(
+        self, user_request: BytesIO | str, session_id: str = 'default'
+    ) -> str:
         """Processes user request
 
         Args:
@@ -38,7 +40,7 @@ class Assistant:
         logger.info('[STARTED] Language model inference')
         awnser_started = time.time()
 
-        awnser = self.language_model(user_request)
+        awnser = self.language_model(user_request, session_id)
 
         awnser_elapsed = time.time() - awnser_started
         logger.info('[FINISHED] Language model inference')
@@ -57,11 +59,10 @@ class Assistant:
 
         return awnser
 
-    def save_state(self, save_location: str | Path):
-        self.language_model.save_memory(save_location)
+    def clear_state(self, session_id: str = 'default'):
+        self.language_model.clear_memory(session_id)
 
-    def load_state(self, load_location: str | Path):
-        self.language_model.load_memory(load_location)
-
-    def __call__(self, user_request: BytesIO | str) -> str:
-        return self.foward(user_request)
+    def __call__(
+        self, user_request: BytesIO | str, session_id: str = 'default'
+    ) -> str:
+        return self.foward(user_request, session_id)

@@ -41,14 +41,15 @@ class App:
         )
 
         self.listening_sound_location = str(
-            resources.path('sprite_ai.resources.sounds', 'listening_alert_01.wav')
+            resources.path(
+                'sprite_ai.resources.sounds', 'listening_alert_01.wav'
+            )
         )
         self.listening_sound = Sound(self.listening_sound_location)
 
         self.wakeword_model_location = str(
             resources.path('sprite_ai.resources.wakewords', 'sprite.onnx')
         )
-
 
         self.log_dir = platformdirs.user_log_path(
             appname=app_name,
@@ -66,13 +67,14 @@ class App:
         self.persistence_location = self.user_data_dir / 'state'
         self.config_location = self.user_data_dir / 'config.yaml'
         self.chat_state_location = self.persistence_location / 'state.yml'
-        self.assistant_state_location = self.persistence_location / 'state.mem'
         self.persistence_location.mkdir(parents=True, exist_ok=True)
 
         self.setup_logging(log_level)
         assistant_config = self.load_config(self.config_location)
         self.assistant = AssistantFactory().build(
-            assistant_config, on_transcription=self.on_transcription
+            assistant_config,
+            self.persistence_location,
+            on_transcription=self.on_transcription,
         )
         self.initialize_gui(self.config_location)
         self.initialize_sensors()
@@ -94,6 +96,7 @@ class App:
             on_exit=lambda: self.shutdown(),
             on_user_message=self.on_user_message,
             on_assistant_message=lambda: self.sprite.set_state('walking'),
+            on_clear_chat=self.assistant.clear_state,
         )
 
         if self.icon_location:
@@ -137,11 +140,9 @@ class App:
 
     def save_state(self):
         self.chat_window_controller.save_state(self.chat_state_location)
-        self.assistant.save_state(self.assistant_state_location)
 
     def load_state(self):
         self.chat_window_controller.load_state(self.chat_state_location)
-        self.assistant.load_state(self.assistant_state_location)
 
     def prompt_assistant(self, prompt: str | BytesIO):
         assistant_response_future = self._pool.submit(self.assistant, prompt)
