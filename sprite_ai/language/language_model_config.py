@@ -22,5 +22,3 @@ class LanguageModelConfig(BaseModel):
     )
     model_temperature: float = 0.7
     context_size: int = 4096
-    memory_type: Literal['summary', 'summary_buffer'] = 'summary_buffer'
-    memory_tokens_limit: int = 2048
