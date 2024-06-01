@@ -3,7 +3,9 @@ from sprite_ai.language.language_model_server import LanguageModelServer
 
 
 class LanguageModelServerFactory:
-    def build(language_model_config: LanguageModelConfig):
+    def build(
+        self, language_model_config: LanguageModelConfig
+    ) -> LanguageModelServer | None:
         if language_model_config.backend != 'llamacpp':
             return None
 
