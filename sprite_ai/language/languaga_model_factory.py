@@ -20,6 +20,7 @@ class LanguageModelFactory:
         llm_factory = LLMFactory()
         llm = llm_factory.build(
             model_config.name,
+            model_config.backend,
             model_config.context_size,
             model_config.model_temperature,
             model_config.url,

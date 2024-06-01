@@ -8,6 +8,7 @@ class LLMFactory:
     def build(
         self,
         model_name: str,
+        model_backend: str,
         context_size: int,
         temperature: float = 0.7,
         url: str = '',
@@ -19,17 +20,15 @@ class LLMFactory:
         except ValueError as e:
             raise ValueError('Missing model backend in model name', e)
         model_name_start_position = prefix_end_position + 1
-        model_prefix = model_name[:prefix_end_position]
-        model_name = model_name[model_name_start_position:]
 
-        if model_prefix == 'ollama':
+        if model_backend == 'ollama':
             llm = ChatOllama(
                 model=model_name,
                 num_ctx=context_size,
                 temperature=temperature,
                 base_url=url,
             )
-        elif model_prefix == 'openai':
+        elif model_backend == 'openai':
             url = url if url else None
             llm = ChatOpenAI(
                 model=model_name,
@@ -38,7 +37,7 @@ class LLMFactory:
                 openai_api_key=api_key,
                 openai_api_base=url,
             )
-        elif model_prefix == 'together':
+        elif model_backend == 'together':
             url = url if url else 'https://api.together.xyz/inference'
             llm = ChatTogether(
                 model=model_name,
@@ -47,8 +46,8 @@ class LLMFactory:
                 together_api_key=api_key,
                 base_url=url,
             )
-        elif model_prefix == 'llamacpp':
-            url = url if url else 'localhost:8000'
+        elif model_backend == 'llamacpp':
+            url = url if url else 'http://localhost:8000/v1'
             llm = ChatOpenAI(
                 model=model_name,
                 max_tokens=context_size,

@@ -25,7 +25,9 @@ from sprite_ai.audio.wakeword_detector import WakewordDetector
 from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
 from sprite_ai.language.chat_message import ChatMessage
-from sprite_ai.language.language_model_config import LanguageModelConfig
+from sprite_ai.language.language_model_server_factory import (
+    LanguageModelServerFactory,
+)
 from sprite_ai.sensors.microphone import Microphone
 from sprite_ai.ui.shortcut import ShortcutManager
 from sprite_ai.constants import APP_NAME
@@ -71,6 +73,13 @@ class App:
 
         self.setup_logging(log_level)
         assistant_config = self.load_config(self.config_location)
+
+        self.language_model_server = LanguageModelServerFactory().build(
+            assistant_config.language_model
+        )
+        if self.language_model_server is not None:
+            self.language_model_server.start()
+
         self.assistant = AssistantFactory().build(
             assistant_config,
             self.persistence_location,
@@ -203,6 +212,8 @@ class App:
             self.wakeword_detector.shutdown()
 
     def shutdown(self):
+        if self.language_model_server is not None:
+            self.language_model_server.stop()
         os._exit(0)
 
 
