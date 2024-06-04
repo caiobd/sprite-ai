@@ -15,6 +15,7 @@ class LLMFactory:
         api_key: str = '',
     ) -> BaseChatModel:
         if model_backend == 'ollama':
+            url = url if url else 'http://localhost:11434'
             llm = ChatOllama(
                 model=model_name,
                 num_ctx=context_size,
