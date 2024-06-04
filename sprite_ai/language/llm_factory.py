@@ -14,13 +14,6 @@ class LLMFactory:
         url: str = '',
         api_key: str = '',
     ) -> BaseChatModel:
-
-        try:
-            prefix_end_position = model_name.index('/')
-        except ValueError as e:
-            raise ValueError('Missing model backend in model name', e)
-        model_name_start_position = prefix_end_position + 1
-
         if model_backend == 'ollama':
             llm = ChatOllama(
                 model=model_name,
