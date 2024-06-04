@@ -1,5 +1,6 @@
 from __future__ import annotations
 from multiprocessing import Process
+import multiprocessing
 import time
 
 
@@ -60,6 +61,8 @@ class LanguageModelServer:
             repo_id=hf_repo_id,
             filename=file_name,
         )
+        # gets the number of physical cpu cores
+        cpu_count = multiprocessing.cpu_count()
         settings = Settings(
             model=model_location,
             model_alias=model_alias,
@@ -68,6 +71,7 @@ class LanguageModelServer:
             port=port,
             cache=cache,
             verbose=verbose,
+            n_threads=cpu_count,
         )
         app = create_app(
             settings=settings,
