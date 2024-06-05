@@ -13,7 +13,7 @@ OS          |   Linux, MacOS, Windows  [Tested only on Linux]
 CPU         |   Any
 GPU         |   Any [Optionall]
 RAM         |   >= 8GB
-Storage     |   6GB
+Storage     |   8GB
 
 
 ## Dependencies
