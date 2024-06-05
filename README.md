@@ -4,8 +4,22 @@
 ## Description
 Sprite AI is an AI companion for your desktop, through LLM technology a sprite can generate text, dialog and even computer code
 
+## Features
+
+- **Local by default**, no data leaves your computer unless you choose to use an external service (private by default)
+- **Wakeword detection**, call "sprite" and your assistant will start listening your request
+- **Speach to Text**, use a microphone to speak with your assistant
+- **LLM based responses**, no prescripted dialogs your assistant will generate the answer using genarative AI
+- **Text to Speach**, your assistant answers you
+- **Flexible**, use the LLM backend of your choice
+- **Acessible**, works locally both with or without a dedicated GPU
+- **Multilingual**, broad language support
+- **Cute**, wanders around your desktop doing charming animations
+
 
 ## Minimum requirements
+
+### Local only (default settings)
 
 Description |  Value
 ------------|------------------------------
@@ -14,6 +28,16 @@ CPU         |   Any
 GPU         |   Any [Optionall]
 RAM         |   >= 8GB
 Storage     |   8GB
+
+### Remote LLM backed (modified backend settings)
+
+Description |  Value
+------------|------------------------------
+OS          |   Linux, MacOS, Windows  [Tested only on Linux]
+CPU         |   Any
+GPU         |   Any [Optionall]
+RAM         |   >= 4GB
+Storage     |   4GB
 
 
 ## Dependencies
