@@ -65,7 +65,15 @@ In a terminal type the following command
 ### Open the chat window
 Click on the Sprite to open the chat window
 
-### Supported languages
+### Shortcuts
+
+Keys         |  Action                    | Scope
+-------------|----------------------------|------------
+CTRL+Shift+a | start listening for prompt | global
+CTRL+q       | close application          | chat window
+
+
+## Supported languages
 
 | Language       | Dialect                            | Variant                            | Num Speakers   |
 |----------------|------------------------------------|------------------------------------|----------------|
