@@ -16,8 +16,9 @@ class ChatWindowController:
         self,
         settings_location: str | Path,
         on_exit: Callable,
-        on_user_message: Callable,
-        on_assistant_message: Callable,
+        on_user_message: Callable | None = None,
+        on_assistant_message: Callable | None = None,
+        on_clear_chat: Callable | None = None,
     ) -> None:
         self.chat_window = ChatWindow(
             on_clear_chat=self.clear_chat_session,
@@ -31,6 +32,7 @@ class ChatWindowController:
         self._pool = ThreadPoolExecutor()
         self.on_user_message = on_user_message
         self.on_assistant_message = on_assistant_message
+        self.on_clear_chat = on_clear_chat
 
     def load_state(self, state_location: str | Path):
         try:
@@ -55,16 +57,20 @@ class ChatWindowController:
         self.chat_window.message_recived.emit(message.model_dump())
 
     def clear_chat_session(self):
+        if self.on_clear_chat is not None:
+            self.on_clear_chat()
         self.chat_session.clear_state()
         logger.info('Cleared curent state')
 
     def process_user_message(self, message: ChatMessage):
         self.send_message(message)
-        self.on_user_message(message.content)
+        if self.on_user_message is not None:
+            self.on_user_message(message.content)
 
     def process_assistant_message(self, message: ChatMessage):
         self.send_message(message)
-        self.on_assistant_message()
+        if self.on_assistant_message is not None:
+            self.on_assistant_message()
 
     def open_settings(self):
         content_future = self._pool.submit(
