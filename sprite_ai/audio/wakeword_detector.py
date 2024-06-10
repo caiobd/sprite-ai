@@ -32,6 +32,7 @@ class WakewordDetector:
         self._model_location = Path(model_location)
         self._model_backend = self._model_location.suffix[1:]
         self._wakeword = self._model_location.stem
+        self.download_models()
         self.model = Model(
             wakeword_models=[model_location],
             inference_framework=self._model_backend,
@@ -62,7 +63,9 @@ class WakewordDetector:
         return (audio_frame, pyaudio.paContinue)
 
     def download_models(self):
+        logger.info('Downloading wakeword models')
         openwakeword.utils.download_models()
+        logger.success('Finished downloading wakeword models')
 
     def start(self):
         logger.info('[STARTED] Listening for wakeword')
@@ -77,12 +80,11 @@ class WakewordDetector:
                 start=True,
             )
         self._detection_active.set()
-        
 
     def stop(self):
         self._detection_active.clear()
         logger.info('[ENDED] Listening for wakeword')
-    
+
     def shutdown(self):
         self._detection_active.clear()
         self.stream.stop_stream()
