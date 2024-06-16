@@ -44,6 +44,12 @@ Storage     |   4GB
 - [Python](https://www.python.org/) >= 3.9
 - [pipx](https://pipx.pypa.io/stable/) [Optional]
 
+## Supported backends
+- llamacpp (default)
+- ollama
+- groq
+- together
+- openai
 
 ## Installation
 1. [Install Python](https://wiki.python.org/moin/BeginnersGuide/Download) >= 3.9
