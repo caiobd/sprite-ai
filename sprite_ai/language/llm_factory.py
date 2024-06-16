@@ -1,5 +1,6 @@
 from langchain.chat_models.base import BaseChatModel
 from langchain_community.chat_models.ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from langchain_together import ChatTogether
 
@@ -48,6 +49,15 @@ class LLMFactory:
                 temperature=temperature,
                 openai_api_key=api_key,
                 openai_api_base=url,
+            )
+        elif model_backend == 'groq':
+            url = url if url else None
+            llm = ChatGroq(
+                model=model_name,
+                max_tokens=context_size,
+                temperature=temperature,
+                api_key=api_key,
+                base_url=url,
             )
         else:
             raise ValueError('Unsuported model type')
