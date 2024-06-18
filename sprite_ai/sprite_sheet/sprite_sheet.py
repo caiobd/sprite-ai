@@ -34,7 +34,7 @@ class SpriteSheetIterator:
     def __post_init__(self):
         if self.end_index is None:
             self.end_index = (
-                self.sprite_sheet_metadata.n_cols
+                self.sprite_sheet_metadata.n_columns
                 * self.sprite_sheet_metadata.n_rows
             )
         self.frame_index = self.start_index
@@ -90,10 +90,8 @@ class SpriteSheetIterator:
     def offset_y(self) -> int:
         try:
             _offset_y = (
-                self.sprite_sheet_metadata.sprite_height
-                * self.frame_index
-                % self.sprite_sheet_metadata.sprite_width
-            )
+                self.frame_index // self.sprite_sheet_metadata.n_columns
+            ) * self.sprite_sheet_metadata.sprite_height
         except:
             _offset_y = 0
 
