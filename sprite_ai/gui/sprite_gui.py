@@ -9,7 +9,7 @@ from sprite_ai.movement.coordinate import Coordinate
 from sprite_ai.movement.linear_movement import LinearMovement
 from sprite_ai.sprite_sheet.animation import Animation, AnimationController
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
-from sprite_ai.sprite_widget import SpriteWidgetQt
+from sprite_ai.gui.sprite_widget import SpriteWidgetQt
 
 
 class SpriteGui:

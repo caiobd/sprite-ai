@@ -32,7 +32,7 @@ from sprite_ai.language.language_model_server_factory import (
 from sprite_ai.profile.sprite_profile_config import SpriteProfileConfig
 from sprite_ai.sensors.microphone import Microphone
 from sprite_ai.ui.shortcut import ShortcutManager
-from sprite_ai.constants import APP_NAME
+from sprite_ai.core.constants import APP_NAME
 
 
 class App:
