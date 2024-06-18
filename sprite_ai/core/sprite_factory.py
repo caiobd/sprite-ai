@@ -3,7 +3,6 @@ from typing import Callable
 import imagesize
 
 from sprite_ai.core.sprite import Sprite
-from sprite_ai.profile.sprite_profile import SpriteProfile
 from sprite_ai.profile.sprite_profile_config import SpriteProfileConfig
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from sprite_ai.defaults.default_states import POSSIBLE_STATES

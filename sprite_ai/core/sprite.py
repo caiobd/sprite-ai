@@ -10,8 +10,6 @@ from sprite_ai.movement.movement_factory import MovementFactory
 from sprite_ai.sprite_sheet.animation import Animation
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 
-import imagesize
-
 
 class Sprite:
     def __init__(
