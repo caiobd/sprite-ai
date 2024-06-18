@@ -1,9 +1,21 @@
-import audioop
 from io import BytesIO
+import os
 import time
 import wave
 from loguru import logger
+import numpy as np
 import pyaudio
+from silero_vad import SileroVAD
+from faster_whisper.utils import get_assets_path
+
+
+def int2float(sound):
+    abs_max = np.abs(sound).max()
+    sound = sound.astype('float32')
+    if abs_max > 0:
+        sound *= 1 / 32768
+    sound = sound.squeeze()
+    return sound
 
 
 class Microphone:
@@ -11,8 +23,16 @@ class Microphone:
         self.chunk = 1024
         self.format = pyaudio.paInt16
         self.channels = 1
-        self.rate = 44100
+        self.rate = 16000
         self._pyaudio = pyaudio.PyAudio()
+        vad_model_location = os.path.join(get_assets_path(), 'silero_vad.onnx')
+        self.vad_model = SileroVAD(vad_model_location)
+
+    def _predict_speach_probability(self, audio_chunk: bytes) -> float:
+        audio_chunk = np.frombuffer(audio_chunk, dtype=np.int16)
+        audio_chunk = int2float(audio_chunk)
+        speeach_probability = self.vad_model(audio_chunk, self.rate).item()
+        return speeach_probability
 
     def calibrate(self, interval_seconds: float) -> int:
         logger.info('[STARTED] calibrating microphone')
@@ -31,14 +51,15 @@ class Microphone:
 
         while interval_seconds > elapsed_calibration_time:
             data = stream.read(self.chunk)
-            rms = audioop.rms(data, 2)
-            ambient_noise_data.append(rms)
+            speach_probability = self._predict_speach_probability(data)
+
+            ambient_noise_data.append(speach_probability)
             elapsed_calibration_time = time.time() - calibration_started_time
 
         stream.stop_stream()
         stream.close()
 
-        silence_threshold = max(ambient_noise_data)
+        silence_threshold = np.median(ambient_noise_data)
 
         logger.info('[FINISHED] calibrating microphone')
 
@@ -49,7 +70,7 @@ class Microphone:
         max_duration=60,
         max_silence_seconds=2,
         patience=20,
-        silence_threshold=-1,
+        silence_threshold=0.5,
     ) -> BytesIO:
         logger.info('[STARTED] Microfone recording')
 
@@ -68,22 +89,22 @@ class Microphone:
 
         while record_time < max_duration:
             data = stream.read(self.chunk)
-            frames.append(data)
+            speach_probability = self._predict_speach_probability(data)
+            logger.debug(f'Speach probability: {speach_probability}')
 
-            rms = audioop.rms(data, 2)
             last_speach_time_delta = time.time() - last_speach
 
-            if rms > silence_threshold:
-                state = 'listening'
+            if speach_probability > silence_threshold:
                 last_speach = time.time()
                 consecutive_silece_windows = 0
             else:
-                state = 'silence'
                 consecutive_silece_windows += 1
 
                 if consecutive_silece_windows > patience:
                     if last_speach_time_delta > max_silence_seconds:
                         break
+
+            frames.append(data)
             record_time += len(data) / self.rate
 
         stream.stop_stream()
