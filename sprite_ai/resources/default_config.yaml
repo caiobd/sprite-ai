@@ -15,3 +15,6 @@ language_model:
     assistant: Você é meaw dono!\n
     user: Qual sua comida favorita?\n
     assistant: Miau! Amo peixe!
+
+profile:
+  name: fred

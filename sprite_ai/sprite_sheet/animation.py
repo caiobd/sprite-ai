@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPixmap, QTransform
+from loguru import logger
+from pydantic import BaseModel
 
 from .sprite_sheet import SpriteSheetIterator, SpriteSheetMetadata
 
@@ -55,8 +57,7 @@ from .sprite_sheet import SpriteSheetIterator, SpriteSheetMetadata
 #         pass
 
 
-@dataclass
-class Animation:
+class Animation(BaseModel):
     start_index: int
     end_index: int
     speed: int | float
@@ -102,6 +103,10 @@ class AnimationController:
             raise TypeError('Animations must be set and not None')
         try:
             animation: Animation = self._animations[name]
+
+            logger.debug(
+                f'animation_name: {name}, start_index: {animation.start_index}, end_index: {animation.end_index}'
+            )
 
             animation.flip_x = flip_x
             animation.flip_y = flip_y

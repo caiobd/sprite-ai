@@ -24,10 +24,12 @@ from sprite_ai.audio.sound import Sound
 from sprite_ai.audio.wakeword_detector import WakewordDetector
 from sprite_ai.controller.chat_window_controller import ChatWindowController
 from sprite_ai.core.sprite import Sprite
+from sprite_ai.core.sprite_factory import SpriteFactory
 from sprite_ai.language.chat_message import ChatMessage
 from sprite_ai.language.language_model_server_factory import (
     LanguageModelServerFactory,
 )
+from sprite_ai.profile.sprite_profile_config import SpriteProfileConfig
 from sprite_ai.sensors.microphone import Microphone
 from sprite_ai.ui.shortcut import ShortcutManager
 from sprite_ai.constants import APP_NAME
@@ -35,9 +37,6 @@ from sprite_ai.constants import APP_NAME
 
 class App:
     def __init__(self, app_name: str, log_level: str = 'INFO'):
-        self.sprite_sheet_location = str(
-            resources.path('sprite_ai.resources.sprites', 'fred.png')
-        )
         self.icon_location = str(
             resources.path('sprite_ai.resources.icons', 'carboardbox_open.png')
         )
@@ -85,7 +84,7 @@ class App:
             self.persistence_location,
             on_transcription=self.on_transcription,
         )
-        self.initialize_gui(self.config_location)
+        self.initialize_gui(self.config_location, assistant_config.profile)
         self.initialize_sensors()
         self._pool = ThreadPoolExecutor()
 
@@ -95,7 +94,9 @@ class App:
         logger.add(sys.stdout, level=log_level)
         logger.add(log_location, level=log_level)
 
-    def initialize_gui(self, config_location: Path | str):
+    def initialize_gui(
+        self, config_location: Path | str, profile_config: SpriteProfileConfig
+    ):
         config_location = Path(config_location)
         self.gui_backend = QApplication(sys.argv)
         qscreen_size = self.gui_backend.primaryScreen().size()
@@ -113,10 +114,10 @@ class App:
         screen_size = self.gui_backend.primaryScreen().size()
         screen_size = (screen_size.width(), screen_size.height())
 
-        self.sprite = Sprite(
-            screen_size=self.screen_size,
-            sprite_sheet_location=self.sprite_sheet_location,
-            on_clicked=lambda _: self.on_sprite_clicked(),
+        self.sprite = SpriteFactory().build(
+            profile_config,
+            self.screen_size,
+            lambda _: self.on_sprite_clicked(),
         )
 
     def initialize_sensors(self):
