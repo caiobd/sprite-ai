@@ -1,5 +1,4 @@
 from concurrent.futures import ThreadPoolExecutor
-import sys
 from typing import Callable, Optional
 
 from PyQt5.QtCore import QAbstractNativeEventFilter, QAbstractEventDispatcher
