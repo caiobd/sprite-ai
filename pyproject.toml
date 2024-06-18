@@ -31,6 +31,7 @@ langchain-community = "^0.2.0"
 langchain-openai = "^0.1.7"
 langchain-together = "^0.1.2"
 langchain-groq = "^0.1.5"
+silero-vad = "^0.0.7"
 [tool.poetry.dev-dependencies]
 
 [tool.poetry.group.dev.dependencies]
