@@ -17,4 +17,6 @@ class WalkingMovement(LinearMovement):
         target_x = random.choice(range(world_width))
         target_y = world_height
         target_coordinate = Coordinate(target_x, target_y)
-        super().__init__(start_coordinate, target_coordinate, 40)
+        steps = abs(start_coordinate.x - target_coordinate.x)
+        steps = max(steps, 2)
+        super().__init__(start_coordinate, target_coordinate, steps)
