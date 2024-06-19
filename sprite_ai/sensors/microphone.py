@@ -34,7 +34,12 @@ class Microphone:
         speeach_probability = self.vad_model(audio_chunk, self.rate).item()
         return speeach_probability
 
-    def calibrate(self, interval_seconds: float) -> int:
+    def calibrate(
+        self,
+        interval_seconds: float,
+        min_treshold: float = 0.1,
+        max_threshold: float = 0.8,
+    ) -> int:
         logger.info('[STARTED] calibrating microphone')
 
         stream = self._pyaudio.open(
@@ -59,7 +64,10 @@ class Microphone:
         stream.stop_stream()
         stream.close()
 
-        silence_threshold = np.median(ambient_noise_data)
+        # chooses a value between min_threshold and max_threshold to be the silence threshold
+        silence_threshold = min(
+            np.median(ambient_noise_data) + min_treshold, max_threshold
+        )
 
         logger.info('[FINISHED] calibrating microphone')
 
