@@ -1,12 +1,6 @@
 from __future__ import annotations
-from pathlib import Path
 
-import pickle
-from dataclasses import dataclass
-from typing import Protocol
-
-from langchain.chains import LLMChain
-import yaml
+from langchain.chains.llm import LLMChain
 
 
 class LanguageModel:

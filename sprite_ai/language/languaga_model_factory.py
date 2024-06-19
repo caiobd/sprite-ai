@@ -1,13 +1,12 @@
 import os
 from pathlib import Path
 
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
-from loguru import logger
-
 from sprite_ai.language.language_model import LanguageModel
 from sprite_ai.language.language_model_config import LanguageModelConfig
 from sprite_ai.language.llm_factory import LLMFactory
+
+from loguru import logger
+from langchain.chains.llm import LLMChain
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.chat_message_histories.file import (
@@ -36,6 +35,7 @@ class LanguageModelFactory:
         self,
         model_config: LanguageModelConfig,
         persistency_location: str | Path,
+        system_prompt: str,
     ) -> LLMChain:
         persistency_location = Path(persistency_location)
 
@@ -45,9 +45,11 @@ class LanguageModelFactory:
             )
             return FileChatMessageHistory(session_location)
 
+        logger.trace(f'System prompt: {system_prompt}')
+
         prompt = ChatPromptTemplate.from_messages(
             [
-                ('system', model_config.system_prompt),
+                ('system', system_prompt),
                 ('placeholder', '{chat_history}'),
                 ('human', '{input}'),
             ]
@@ -67,8 +69,11 @@ class LanguageModelFactory:
         self,
         model_config: LanguageModelConfig,
         persistency_location: str | Path,
+        system_prompt: str,
     ) -> LanguageModel:
-        llm_chain = self._build_llm_chain(model_config, persistency_location)
+        llm_chain = self._build_llm_chain(
+            model_config, persistency_location, system_prompt
+        )
         language_model = LanguageModel(llm_chain)
 
         return language_model
