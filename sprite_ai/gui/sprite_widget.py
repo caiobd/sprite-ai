@@ -39,7 +39,7 @@ class SpriteWidget(ABC):
 
 
 class SpriteWidgetQt(SpriteWidget):
-    def __init__(self):
+    def __init__(self, width: int, height: int):
         self.qwidget = QtWidgets.QWidget()
         self._canvas = None
         self.image = None
