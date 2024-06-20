@@ -43,10 +43,14 @@ class SpriteWidgetQt(SpriteWidget):
         self.qwidget = QtWidgets.QWidget()
         self._canvas = None
         self.image = None
+        self.width = width
+        self.height = height
         self._setup_gui()
 
     def _setup_gui(self):
         self._canvas = QtWidgets.QLabel()
+        self._canvas.setFixedSize(self.width, self.height)
+        self._canvas.setScaledContents(True)
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self._canvas)
         self.qwidget.setLayout(layout)
