@@ -49,6 +49,7 @@ class SpriteWidgetQt(SpriteWidget):
 
     def _setup_gui(self):
         self._canvas = QtWidgets.QLabel()
+        # This will set the size of the sprite on the screen
         self._canvas.setFixedSize(self.width, self.height)
         self._canvas.setScaledContents(True)
         layout = QtWidgets.QGridLayout()
