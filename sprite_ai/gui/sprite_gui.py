@@ -25,7 +25,7 @@ class SpriteGui:
         self.icon_location = icon_location
         self.screen_size = screen_size
         _, screen_height = screen_size
-        sprite_size = int(screen_height * 0.2)
+        sprite_size = int(screen_height * 0.15)
         self.sprite_widget = SpriteWidgetQt(sprite_size, sprite_size)
         sprite_sheet_image = QPixmap(sprite_sheet_metadata.path)
         self.animation_controller = AnimationController(
