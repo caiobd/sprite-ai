@@ -52,6 +52,8 @@ class SpriteWidgetQt(SpriteWidget):
         self._canvas.setFixedSize(self.width, self.height)
         self._canvas.setScaledContents(True)
         layout = QtWidgets.QGridLayout()
+        # Removes margins so the label image can touch the extremes of the screen
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._canvas)
         self.qwidget.setLayout(layout)
         self.qwidget.setAttribute(QtCore.Qt.WA_TranslucentBackground)
