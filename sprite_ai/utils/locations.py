@@ -1,6 +1,6 @@
 import platformdirs
 
-from sprite_ai.constants import APP_NAME
+from sprite_ai.core.constants import APP_NAME
 
 
 user_data_location = platformdirs.user_data_path(

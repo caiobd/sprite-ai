@@ -2,11 +2,12 @@ from pathlib import Path
 from threading import Timer
 from typing import Callable
 from sprite_ai.core.sprite_behaviour import SpriteBehaviour
-from sprite_ai.default_animations import ANIMATIONS
-from sprite_ai.default_states import POSSIBLE_STATES
+from sprite_ai.core.sprite_state import SpriteState
+
 from sprite_ai.gui.sprite_gui import SpriteGui
 from sprite_ai.movement.coordinate import Coordinate
 from sprite_ai.movement.movement_factory import MovementFactory
+from sprite_ai.sprite_sheet.animation import Animation
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 
 
@@ -14,15 +15,22 @@ class Sprite:
     def __init__(
         self,
         screen_size: tuple[int, int],
-        sprite_sheet_location: str | Path,
+        sprite_sheet_metadata: SpriteSheetMetadata,
+        animations: dict[str:Animation],
+        states: dict[str:SpriteState],
+        first_state: str,
         on_clicked: Callable,
         icon_location: str | Path = '',
     ) -> None:
         self.sprite_gui = self._build_gui(
-            sprite_sheet_location, screen_size, on_clicked, icon_location
+            sprite_sheet_metadata,
+            animations,
+            screen_size,
+            on_clicked,
+            icon_location,
         )
         self.sprite_behaviour = SpriteBehaviour(
-            possible_states=POSSIBLE_STATES, first_state='appearing'
+            possible_states=states, first_state=first_state
         )
         width, height = screen_size
         self.current_position = Coordinate(width // 2, height)
@@ -33,18 +41,16 @@ class Sprite:
 
     def _build_gui(
         self,
-        sprite_sheet_location: str | Path,
+        sprite_sheet_metadata: SpriteSheetMetadata,
+        animations: dict[str:Animation],
         screen_size: tuple[int, int],
         on_clicked: Callable,
         icon_location: str | Path = '',
     ) -> SpriteGui:
-        sprite_sheet_metadata = SpriteSheetMetadata(
-            sprite_sheet_location, 5888, 128, 46, 1
-        )
         sprite_gui = SpriteGui(
             screen_size,
             sprite_sheet_metadata,
-            ANIMATIONS,
+            animations,
             icon_location=icon_location,
             on_clicked=on_clicked,
             on_position_updated=self.on_position_update,

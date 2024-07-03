@@ -39,15 +39,22 @@ class SpriteWidget(ABC):
 
 
 class SpriteWidgetQt(SpriteWidget):
-    def __init__(self):
+    def __init__(self, width: int, height: int):
         self.qwidget = QtWidgets.QWidget()
         self._canvas = None
         self.image = None
+        self.width = width
+        self.height = height
         self._setup_gui()
 
     def _setup_gui(self):
         self._canvas = QtWidgets.QLabel()
+        # This will set the size of the sprite on the screen
+        self._canvas.setFixedSize(self.width, self.height)
+        self._canvas.setScaledContents(True)
         layout = QtWidgets.QGridLayout()
+        # Removes margins so the label image can touch the extremes of the screen
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._canvas)
         self.qwidget.setLayout(layout)
         self.qwidget.setAttribute(QtCore.Qt.WA_TranslucentBackground)

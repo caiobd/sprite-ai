@@ -32,6 +32,7 @@ langchain-openai = "^0.1.7"
 langchain-together = "^0.1.2"
 langchain-groq = "^0.1.5"
 silero-vad = "^0.0.7"
+imagesize = "^1.4.1"
 [tool.poetry.dev-dependencies]
 
 [tool.poetry.group.dev.dependencies]

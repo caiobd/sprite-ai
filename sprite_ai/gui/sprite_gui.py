@@ -3,17 +3,13 @@ import sys
 import threading
 from typing import Any, Callable
 
-import numpy as np
-from pydantic import BaseModel
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QPixmap
 
-from sprite_ai.movement import Movement
 from sprite_ai.movement.coordinate import Coordinate
 from sprite_ai.movement.linear_movement import LinearMovement
 from sprite_ai.sprite_sheet.animation import Animation, AnimationController
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
-from sprite_ai.sprite_widget import SpriteWidgetQt
+from sprite_ai.gui.sprite_widget import SpriteWidgetQt
 
 
 class SpriteGui:
@@ -28,13 +24,15 @@ class SpriteGui:
     ):
         self.icon_location = icon_location
         self.screen_size = screen_size
-        self.sprite_widget = SpriteWidgetQt()
+        _, screen_height = screen_size
+        sprite_size = int(screen_height * 0.15)
+        self.sprite_widget = SpriteWidgetQt(sprite_size, sprite_size)
         sprite_sheet_image = QPixmap(sprite_sheet_metadata.path)
         self.animation_controller = AnimationController(
             sprite_sheet_image, sprite_sheet_metadata, animations
         )
         self.image_update_rate: float | int = 0.1
-        self.position_update_rate: float | int = 0.2
+        self.position_update_rate: float | int = 0.05
         self._image_update_timer: threading.Timer | None = None
         self._position_update_timer: threading.Timer | None = None
         self._movement: LinearMovement | None = None
