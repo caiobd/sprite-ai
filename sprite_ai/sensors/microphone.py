@@ -5,7 +5,7 @@ import wave
 from loguru import logger
 import numpy as np
 import pyaudio
-from silero_vad import SileroVAD
+from faster_whisper.vad import SileroVADModel as SileroVAD
 from faster_whisper.utils import get_assets_path
 
 
@@ -27,12 +27,20 @@ class Microphone:
         self._pyaudio = pyaudio.PyAudio()
         vad_model_location = os.path.join(get_assets_path(), 'silero_vad.onnx')
         self.vad_model = SileroVAD(vad_model_location)
+        self.state = None
 
     def _predict_speach_probability(self, audio_chunk: bytes) -> float:
         audio_chunk = np.frombuffer(audio_chunk, dtype=np.int16)
         audio_chunk = int2float(audio_chunk)
-        speeach_probability = self.vad_model(audio_chunk, self.rate).item()
-        return speeach_probability
+
+        if self.state is None:
+            self.state = self.vad_model.get_initial_state(batch_size=1)
+
+        probability, self.state = self.vad_model(
+            audio_chunk, self.state, self.rate
+        )
+        probability = probability.flat[0]
+        return probability
 
     def calibrate(
         self,
