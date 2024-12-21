@@ -33,6 +33,7 @@ langchain-together = "^0.1.2"
 langchain-groq = "^0.1.5"
 silero-vad = "5.1"
 imagesize = "^1.4.1"
+onnxruntime = "^1.2.1"
 [tool.poetry.dev-dependencies]
 
 [tool.poetry.group.dev.dependencies]
