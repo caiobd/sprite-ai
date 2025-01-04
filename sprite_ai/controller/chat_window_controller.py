@@ -57,9 +57,9 @@ class ChatWindowController:
         self.chat_window.message_recived.emit(message.model_dump())
 
     def clear_chat_session(self):
+        self.chat_session.clear_state()
         if self.on_clear_chat is not None:
             self.on_clear_chat()
-        self.chat_session.clear_state()
         logger.info('Cleared curent state')
 
     def process_user_message(self, message: ChatMessage):

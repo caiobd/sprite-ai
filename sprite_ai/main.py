@@ -106,7 +106,7 @@ class App:
             on_exit=lambda: self.shutdown(),
             on_user_message=self.on_user_message,
             on_assistant_message=lambda: self.sprite.set_state('walking'),
-            on_clear_chat=self.assistant.clear_state,
+            on_clear_chat=self.on_clear_state,
         )
 
         if self.icon_location:
@@ -175,6 +175,10 @@ class App:
         assistant_response_future.add_done_callback(process_response)
         assistant_response_future.add_done_callback(save_state)
         assistant_response_future.add_done_callback(listen_for_wakeword)
+
+    def on_clear_state(self):
+        self.assistant.clear_state()
+        self.chat_window_controller.save_state(self.chat_state_location)
 
     def on_user_message(self, prompt: str | BytesIO):
         self.sprite.set_state('thinking')
