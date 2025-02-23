@@ -4,12 +4,18 @@ import threading
 from typing import Any, Callable
 
 from PyQt5.QtGui import QPixmap
+import imageio
+import numpy as np
+import rerun as rr
+import rerun.blueprint as rrb
+
 
 from sprite_ai.movement.coordinate import Coordinate
 from sprite_ai.movement.linear_movement import LinearMovement
 from sprite_ai.sprite_sheet.animation import Animation, AnimationController
 from sprite_ai.sprite_sheet.sprite_sheet import SpriteSheetMetadata
 from sprite_ai.gui.sprite_widget import SpriteWidgetQt
+from loguru import logger
 
 
 class SpriteGui:
@@ -45,7 +51,17 @@ class SpriteGui:
             self.image_update_rate, self._update_image_loop
         )
         self._image_update_timer.start()
-        self.sprite_widget.image = self.animation_controller.frame
+        frame = self.animation_controller.frame
+        self.sprite_widget.image = frame
+        frame = qpixmap2array(frame)
+        rr.log(
+            'sprite/frame',
+            rr.Image(frame),
+        )
+        rr.log(
+            'sprite/frame',
+            rr.Transform3D(translation=[*self.sprite_widget.position, 0]),
+        )
 
     def _update_position_loop(self):
         self._position_update_timer = threading.Timer(
@@ -80,8 +96,29 @@ class SpriteGui:
         self.animation_controller.set_orientation(movement.orientation)
         self._movement = movement
 
+        start_x, start_y = movement.start
+        start_x += self.sprite_widget.width // 2
+        start_y += self.sprite_widget.height // 2
+        end_x, end_y = movement.end
+        end_x += self.sprite_widget.width // 2
+        end_y += self.sprite_widget.height // 2
+
+        magnetude_x = end_x - start_x
+        magnetude_y = end_y - start_y
+
+        rr.log(
+            'sprite/movement_destination',
+            rr.Arrows2D(
+                origins=[[start_x, start_y]],
+                vectors=[[magnetude_x, magnetude_y]],
+                colors=[[255, 0, 0]],
+                radii=4,
+            ),
+        )
+
     def set_animation(self, name: str):
         self.animation_controller.set_animation(name)
+        rr.log('sprite/animation', rr.TextLog(name))
 
         if self._movement:
             orientation = self._movement.orientation

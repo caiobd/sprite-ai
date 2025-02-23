@@ -4,8 +4,10 @@ from typing import Callable
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QEvent, Qt, pyqtSignal, pyqtSlot
-from sprite_ai.language.chat_message import ChatMessage
+import rerun as rr
 
+from sprite_ai.language.chat_message import ChatMessage
+from sprite_ai.sprite_sheet.image_utils import array_bgr2rgb, qpixmap2array
 from sprite_ai.ui.chat_window_ui import Ui_MainWindow
 from sprite_ai.ui.message_delegate import MessageDelegate
 from sprite_ai.ui.message_model import MessageModel
@@ -50,6 +52,11 @@ class ChatWindow(QtWidgets.QMainWindow):
         self.show()
         self.hide()
 
+    def _snapshot_window_state(self):
+        gui_snapshot = self.grab()
+        gui_snapshot = qpixmap2array(gui_snapshot)
+        rr.log('chatgui/snapshot', rr.Image(gui_snapshot))
+
     @pyqtSlot()
     def _exit_pressed(self):
         self.on_exit()
@@ -80,6 +87,7 @@ class ChatWindow(QtWidgets.QMainWindow):
         )
         self.on_user_message(message)
         self.ui.te_chatinput.clear()
+        self._snapshot_window_state()
 
     @pyqtSlot(dict)
     def add_message(self, message: dict):
@@ -98,12 +106,15 @@ class ChatWindow(QtWidgets.QMainWindow):
         self.model.add_message(sender_id, content)
         self.ui.lv_chat_history.scrollToBottom()
         self.model.layoutChanged.emit()
+        self._snapshot_window_state()
 
     @pyqtSlot()
     def clear_messages(self):
         self.on_clear_chat()
         self.model.clear_messages()
+        self._snapshot_window_state()
 
     @pyqtSlot()
     def open_settings(self):
         self.on_open_settings()
+        self._snapshot_window_state()

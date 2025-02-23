@@ -9,3 +9,4 @@ class SpriteProfile(BaseModel):
     sprite_sheet_rows: int
     sprite_sheet_columns: int
     animations: dict[str, Animation]
+    color_map: dict[int, tuple[int, int, int, int]]

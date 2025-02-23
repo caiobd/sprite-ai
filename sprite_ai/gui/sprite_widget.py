@@ -82,6 +82,13 @@ class SpriteWidgetQt(SpriteWidget):
     def position(self) -> Coordinate:
         return self._position
 
+    @property
+    def center_position(self) -> Coordinate:
+        left_x, top_y = self._position
+        center_x = left_x - (self.width // 2)
+        center_y = top_y - (self.height // 2)
+        return center_x, center_y
+
     @position.setter
     def position(self, xy_coordinates: tuple[Numeric, Numeric] | Coordinate):
         x, y = xy_coordinates

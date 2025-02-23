@@ -25,6 +25,12 @@ class SpriteSheetMetadata:
 
 
 @dataclass
+class SpriteSheetMaskMetadata:
+    path: str | Path
+    color_map: dict[int, Tuple[int, int, int, int]]
+
+
+@dataclass
 class SpriteSheetIterator:
     sprite_sheet_metadata: SpriteSheetMetadata
     start_index: int = 0

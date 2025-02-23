@@ -16,6 +16,8 @@ from loguru import logger
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
+import rerun as rr
+import rerun.blueprint as rrb
 
 from sprite_ai.assistant.assistant_config import AssistantConfig
 from sprite_ai.assistant.assistant_factory import AssistantFactory
@@ -84,8 +86,11 @@ class App:
             self.persistence_location,
             on_transcription=self.on_transcription,
         )
-        self.initialize_gui(self.config_location, assistant_config.profile)
+        screen_size = self.initialize_gui(
+            self.config_location, assistant_config.profile
+        )
         self.initialize_sensors()
+        self.setup_rerun(screen_size)
         self._pool = ThreadPoolExecutor()
 
     def setup_logging(self, log_level='INFO'):
@@ -119,6 +124,7 @@ class App:
             self.screen_size,
             lambda _: self.on_sprite_clicked(),
         )
+        return screen_size
 
     def initialize_sensors(self):
         self.shortcut_manager = ShortcutManager()
@@ -147,6 +153,27 @@ class App:
             )
 
         return assistant_config
+
+    def setup_rerun(self, screen_size: tuple[int, int]):
+        rr.init('sprite_ai', spawn=True)
+        screen_width, screen_height = screen_size
+
+        blueprint = rrb.Blueprint(
+            rrb.Spatial2DView(
+                origin='/',
+                name='2D Scene',
+                # Set the background color
+                background=[105, 20, 105],
+                # Note that this range is smaller than the range of the points,
+                # so some points will not be visible.
+                visual_bounds=rrb.VisualBounds2D(
+                    x_range=[0, screen_width],
+                    y_range=[0, screen_height],
+                ),
+            ),
+            # collapse_panels=True,
+        )
+        rr.send_blueprint(blueprint)
 
     def save_state(self):
         self.chat_window_controller.save_state(self.chat_state_location)
